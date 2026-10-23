@@ -208,7 +208,7 @@ del{background:#fbe2de;color:#9b2c20;border-radius:3px;padding:0 2px}
 .home{max-width:1180px;margin:0 auto;padding:40px 0 20px}
 .htitle{font-size:38px;text-align:center;margin-bottom:10px}
 .hintro{text-align:center;color:var(--mut);font-size:15px;margin:0 auto 44px;max-width:720px}
-.hcards{display:grid;grid-template-columns:repeat(5,1fr);gap:20px}
+.hcards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .hcard{padding:22px;display:flex;flex-direction:column;gap:10px;min-height:250px}
 .hcard h3{font-size:17px;line-height:1.3}
 .hcard p{margin:0;flex:1}
@@ -545,6 +545,25 @@ del{background:#fbe2de;color:#9b2c20;border-radius:3px;padding:0 2px}
 .to{flex-wrap:nowrap;gap:6px}
 .chip.pchip{cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px}
 .pmenu{top:30px;bottom:auto;min-width:220px}
+/* MVP feedback space */
+.mvp-sum{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 4px}
+.mvp-sum .card{cursor:pointer}
+.mvp-sum .card:hover{border-color:var(--ink)}
+.mvp-sum .n{margin:2px 0 8px}
+.mvp-pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.mvp-pick button.on{border-color:#111;background:var(--soft)}
+.mvp-lay{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start;margin-top:4px}
+.mvp-lay.one{grid-template-columns:1fr}
+.mvp-ta{width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none;resize:vertical;margin-top:12px}
+.mvp-q{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font:inherit;font-size:13px;line-height:1.4;color:inherit}
+.mvp-q:hover{background:var(--soft)}
+.mvp-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+.mvp-item:last-child{border-bottom:0}
+.mvp-item:hover{background:var(--soft)}
+.mvp-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);display:inline-block;flex:none}
+.mvp-body{white-space:pre-wrap;line-height:1.55}
+.mvp-sec textarea{min-height:52px}
+@media(max-width:900px){.mvp-lay,.mvp-sum{grid-template-columns:1fr}.mvp-item{grid-template-columns:auto 1fr}}
 </style>
 </head>
 <body>
@@ -816,6 +835,18 @@ function wCopy(id){const t=wFinal(id)||W[id].items.filter(i=>i.status!=='rejecte
 function wSend(id){W[id].onSend(wFinal(id),wFinalItems(id))}
 /* ---------- state ---------- */
 const S={tab:'home',view:{A:'senior',C:'senior',D:'senior',E:'senior'},rated:{},jst:{},
+ mvp:{view:'senior',main:'give',detailId:null,
+  give:{jid:'anna',topic:'review',matter:'Nordlys NDA',text:'',guideOpen:false,improve:null},
+  owed:[
+   {id:'o1',jid:'anna',topic:'Performance review',label:'Q3 review'},
+   {id:'o2',jid:'jonas',topic:'Matter',label:'Limitation memo'},
+   {id:'o3',jid:'sofie',topic:'General',label:'Check-in'}],
+  received:[
+   {id:'r2',from:'Ingrid Solberg',fromIni:'IS',fromCol:'#5f5a51',subject:'Nordlys NDA',type:'Matter',date:'3 Oct 2026',unread:true,body:'You owned the first draft, and the cover email was ready for the client. Clause 1.2 was broader than the usual Nordlys wording. On the next NDA, check the precedent before you send it.'},
+   {id:'r4',from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833',subject:'Q3 check-in',type:'Performance review',date:'2 Oct 2026',unread:true,body:'What went well\nCareful definitions and clear client emails.\n\nWhat to improve\nTurnaround on the limitation memo.\n\nNext steps\nAgree a date for the next draft before you start.'},
+   {id:'r5',from:'Kari Holm',fromIni:'KH',fromCol:'#7d766a',subject:'Thanks on the employment note',type:'General',date:'21 Sep 2026',unread:false,body:'The walkthrough last week helped. Keep starting with what is working, then the one change that matters.'},
+   {id:'r3',from:'Henrik Aas',fromIni:'HA',fromCol:'#3a3833',subject:'Team check-in',type:'General',date:'18 Sep 2026',unread:false,body:'Keep the clear client emails. Start naming the commercial point in the first paragraph. The 3 Oct Nordlys note is a good example of the tone to keep.'},
+   {id:'r1',from:'Henrik Aas',fromIni:'HA',fromCol:'#3a3833',subject:'Q2 performance notes',type:'Performance review',date:'12 Jun 2026',unread:true,body:'What went well\nYour drafting on the Nordlys NDA was precise, especially the definitions.\n\nWhat to improve\nFlag commercial issues in the first draft, not in the second round.\n\nNext steps\nLead one NDA in Q3 and send me the draft a day before it goes out.'}]},
  a:null,
  fs:{view:'senior',sub:'people',jsub:'reviews',jrev:null,pb:null},up:{martin:{},henrik:{}},
  b:{tid:'anna',draft:'',improving:false,held:null,how:false,att:{},
@@ -827,18 +858,19 @@ const S={tab:'home',view:{A:'senior',C:'senior',D:'senior',E:'senior'},rated:{},
 };
 /* ---------- prototype meta ---------- */
 const P={
+ MVP:{one:'Give or receive feedback on a review, a matter, or in general.',t:'Feedback Space',where:'MVP tab',upload:'No',fit:'High'},
  A:{one:'Pick the Feedback Coach assistant in Saga, write bullets, @ the junior, and review the tailored reply.',t:'Feedback Coach assistant in Saga chat',where:'Saga chat: an assistant in the "Auto ⌄" picker, or /feedback',eff:'Low',upload:'No',fit:'High',risk:'No messaging. The senior copies the tailored feedback and uses it where they want.',
   what:'A new Saga assistant called "Feedback Coach". The senior opens Auto ⌄, goes to assistants, and picks it (or types /feedback). Then the senior @-mentions the junior and writes bullets. The assistant replies in the chat with a tailored version to review line by line.',
   pros:['Uses the existing assistant setup (system prompt + attached documents)','No new page and no document upload','Also reachable with a /feedback command'],
   cons:['Seniors must find the assistant in the picker','No messaging: the senior copies the result'],
   fit1:'High. Covers a general comment on a draft and overall feedback, tailored by persona. The playbook menu also includes "Performance review" (E).',insp:[["Spellbook", "AI suggests edits in Word that the lawyer accepts or rejects, and accepted edits appear under the lawyer's name.", "Every tailored line has Accept / Edit / Reject, plus Accept all. The final feedback is sent as the senior."], ["GC AI", "Shows the reason behind each answer, with exact citations to the source text.", "\"Why this change?\" on every line shows the reason and the source: the senior’s comment number and/or the junior’s persona."], ["Harvey", "Can make small, targeted edits to a document instead of rewriting all of it.", "\"Minimal edits only\" keeps the senior’s own words and shows only small insertions and deletions."], ["Wordsmith", "Offers several alternative wordings (fallback options) to choose from.", "The reply has three tone variants to choose from: Balanced, More direct, Warmer."], ["Playbooks", "Several legal AI tools apply firm rules per contract type (playbooks).", "The senior picks a feedback playbook per document type: contract, memo, court filing or performance review."]]},
- B:{part:1,one:'One thread per junior. The coach drafts, the senior approves, and a document link can go with it.',t:'Messages (in the Feedback Space)',where:'Feedback Space → Messages',eff:'Medium',upload:'No',fit:'Medium–High',risk:'A new page, notifications and permissions to build.',
+ B:{part:1,one:'One thread per junior. The coach drafts, the senior approves, and a document link can go with it.',t:'Messages (in the Feedback Space)',where:'Feedback page later → Messages',eff:'Medium',upload:'No',fit:'Medium–High',risk:'A new page, notifications and permissions to build.',
   what:'A tab in the Feedback Space. Each junior has one thread. The senior writes bullets, the coach proposes a tailored draft that only the senior sees, and the senior approves it before it is sent. The senior can open “How Anna likes feedback” and attach a link to the reviewed document.',
   pros:['Feedback stays in Saga (the "feedback portal" in the scope)','The junior can reply and ask questions','The anonymous rating gives seniors a signal'],
   cons:['More build: threads, notifications, read state','Competes with email and Teams habits'],
   fit1:'Medium–High. A good delivery channel for Phase 1 feedback.',
   insp:[["Spellbook", "AI suggests edits in Word that the lawyer accepts or rejects, and accepted edits appear under the lawyer's name.", "The coach draft is visible only to the senior. After approval, it is sent in the thread as the senior."], ["Wordsmith", "Offers several alternative wordings (fallback options) to choose from.", "The senior can switch between three tone variants before sending."], ["GC AI", "Shows the reason behind each answer, with exact citations to the source text.", "\"Why this change?\" shows which comment and which persona trait each line comes from."]]},
- C:{one:'One space for seniors and juniors. It contains Messages (B), Performance review (E) and anonymous upward feedback.',t:'Feedback Space',where:'New "Feedback Space" page in the sidebar, with tabs',eff:'Medium',effLabel:'Medium–High',upload:'No',fit:'Medium',risk:'Profile and progression data need clear privacy and consent rules.',
+ C:{one:'One space for seniors and juniors. It contains Messages (B), Performance review (E) and anonymous upward feedback.',t:'Feedback Space',where:'Feedback page later',eff:'Medium',effLabel:'Medium–High',upload:'No',fit:'Medium',risk:'Profile and progression data need clear privacy and consent rules.',
   what:'One page with tabs. The senior sees Overview & people, Messages and Performance review. The junior has their own space with Performance review, Messages and Review your seniors. Upward feedback is anonymous, and the senior sees combined results after 3 responses.',
   pros:['Makes the Ambition Profile visible and useful','History becomes shared knowledge on what works','A natural home for pilot measurement'],
   cons:['Most data to model and protect','A progression rating can feel like an HR score'],
@@ -850,7 +882,7 @@ const P={
   cons:['Highest effort: Office add-in, sign-in, IT approval','Feedback lives outside Saga, so history is harder'],
   fit1:'Medium. Covers a general comment on a draft. Needs an Office add-in to run.',
   insp:[["Litera Lito", "Summarises the risks in a document and suggests a response.", "The pane summarises the senior’s own Word comments with High / Med / Low severity, and suggests one general comment."], ["Spellbook", "AI suggests edits in Word that the lawyer accepts or rejects, and accepted edits appear under the lawyer's name.", "It works inside Word, and the result is inserted as a Word comment under the senior’s name."], ["Harvey", "Can make small, targeted edits to a document instead of rewriting all of it.", "\"Minimal edits only\" keeps the senior’s words and shows only small changes."]]},
- E:{part:1,one:'A review per junior: three boxes, a tailored version under each heading, approve and share, and a 1:1 agenda.',t:'Performance review (in the Feedback Space)',where:'Feedback Space → Performance review',eff:'Low',effLabel:'Low–Medium',upload:'No',fit:'High',risk:'It feels like an HR form if it gets long.',
+ E:{part:1,one:'A review per junior: three boxes, a tailored version under each heading, approve and share, and a 1:1 agenda.',t:'Performance review (in the Feedback Space)',where:'Feedback page later → Performance review',eff:'Low',effLabel:'Low–Medium',upload:'No',fit:'High',risk:'It feels like an HR form if it gets long.',
   what:'A tab in the Feedback Space with a list of the senior’s juniors. The senior opens one review per junior: three fields, strengths, what to improve, next steps. The coach nudges live, based on the junior\'s trait. Then it drafts a tailored review and an agenda for a 1:1 talk.',
   pros:['Matches Phase 1 (overall performance feedback)','Nudges make the senior more specific','Also creates an agenda for a verbal talk (in the scope)'],
   cons:['Not tied to a specific document','Needs a clear rule on who sees the review'],
@@ -863,15 +895,15 @@ function infoStrip(k){const p=P[k];return `<div class="ptitle"><span class="disp
 /* ---------- router ---------- */
 function go(t){const m={B:'messages',C:'people',E:'reviews'};if(m[t]){S.fs.view='senior';S.fs.sub=m[t];S.c.pid=null;S.e.jid=null;t='FS'}S.tab=t;render();window.scrollTo(0,0)}
 function render(){
- $('#tabs').innerHTML=[['home','','Front page'],['A','A','Feedback Coach'],['FS','B · C · E','Feedback Space'],['D','D','Word Add-in']].map(([k,b,l])=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}" onclick="go('${k}')">${b?`<b>${b}</b>`:''}${l}</button>`).join('');
- const f={home:rHome,A:rA,FS:rFS,D:rD}[S.tab];const back=S.tab==='home'?'':`<button class="back" id="to-front" onclick="go('home')">← Front page</button>`;
+ $('#tabs').innerHTML=[['home','','Front page'],['MVP','','MVP'],['A','A','Feedback Coach'],['FS','B · C · E','Feedback page later'],['D','D','Word Add-in']].map(([k,b,l])=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}" onclick="go('${k}')">${b?`<b>${b}</b>`:''}${l}</button>`).join('');
+ const f={home:rHome,A:rA,FS:rFS,D:rD,MVP:rMVP}[S.tab];const back=S.tab==='home'?'':`<button class="back" id="to-front" onclick="go('home')">← Front page</button>`;
  $('#view').innerHTML=back+f();flush();
 }
 /* ---------- overview ---------- */
 function rHome(){return `<div class="home">
  <h1 class="htitle">Senior-to-junior feedback in Saga</h1>
- <p class="hintro">Five clickable concepts for the Brækhus pilot. B and E are tabs inside the Feedback Space (C). The senior writes, the coach tailors to the junior's trait, and the senior approves. Mock data, no AI calls.</p>
- <div class="hcards">${Object.keys(P).map(k=>`<div class="card hcard" data-card="${k}"><div class="row between"><span class="let">${k}</span></div><h3>${P[k].t}</h3><p class="small muted">${P[k].one}</p>${P[k].part?'<div class="tiny muted" style="margin-top:-4px">Opens inside the Feedback Space</div>':''}<button class="btn pri" onclick="go('${k}')">Open</button></div>`).join('')}</div>
+ <p class="hintro">Six clickable concepts for the Brækhus pilot. MVP is the simpler Feedback Space. B and E open inside Feedback page later. The senior writes, the coach tailors to the junior's trait, and the senior approves. Mock data, no AI calls.</p>
+ <div class="hcards">${Object.keys(P).map(k=>`<div class="card hcard" data-card="${k}"><div class="row between"><span class="let">${k}</span></div><h3>${P[k].t}</h3><p class="small muted">${P[k].one}</p>${P[k].part?'<div class="tiny muted" style="margin-top:-4px">Opens inside Feedback page later</div>':''}<button class="btn pri" onclick="go('${k}')">Open</button></div>`).join('')}</div>
  <div class="hsec"><h2>Personas</h2><div class="hpers">${JUN.map(j=>`<div class="card hper" data-persona="${j.trait}">${tchip(j.trait)}<span class="small">${{alex:'Direct, data-driven, practical, clear expectations',kim:'Reassuring, what is good first, a shared roadmap',charlie:'Goal-oriented, validating, private by default',andy:'Balanced, process-focused, realistic workload'}[j.trait]}</span><span class="tiny muted" style="margin-left:auto">${j.name}</span></div>`).join('')}</div></div>
  <div class="hsec"><h2>Comparison</h2><div class="card" style="overflow:auto"><table class="t ht"><tr><th></th><th>Prototype</th><th>Where it lives</th><th>Document upload</th><th>Phase 1 fit</th></tr>
  ${Object.keys(P).map(k=>`<tr><td><b>${k}</b></td><td>${P[k].t}</td><td class="muted">${P[k].where}</td><td>${P[k].upload}</td><td>${P[k].fit}</td></tr>`).join('')}</table></div></div>
@@ -1200,6 +1232,83 @@ function rD(){const d=S.d,n=d.step,j=J(d.rid);
   <div class="focus" style="display:grid;gap:8px"><button class="ww-pbtn" onclick="toast('Saved to SharePoint')">Save document</button><button class="btn" id="d-share" ${d.shared?'disabled':''} onclick="dShare()">${d.shared?'✓ Shared with '+j.first+' in Saga':'Share with '+j.first+' in Saga'}</button></div>
   <div class="tiny muted">Both options keep the comments under your name.</div>`}
  return infoStrip('D')+bar+wordShell({title:'Nordlys_NDA_draft_AW',ini:'ML',rows,pane:n>=4?pane:'',paneTitle:'Saga Feedback Coach',paneOn:n>=4,hl:n===3});}
+/* ---------- MVP ---------- */
+const MVP_GUIDE={
+ review:['What is one piece of work from this period you were proud to see them deliver, and why?','Where have you seen them grow the most since the last review?','What is one skill that would make the biggest difference for them in the next six months?','How do they handle feedback, pressure and deadlines?','How do they work with clients and colleagues?','What support do they need from you to take the next step?'],
+ matter:['What was their role in the matter, and how well did they own it?','Which part of their legal analysis or drafting stood out, and why?','Was there a moment where a different approach would have led to a better result?','How did they communicate risks and progress to you or the client?','What should they do differently on the next similar matter?','What did you learn from working with them on this matter?'],
+ general:['What should they keep doing?','What should they start or stop doing?','What is one concrete example that illustrates your point?']
+};
+const MVP_TOPIC={review:'Performance review',matter:'Feedback on a matter',general:'General'};
+const MVP_KIND={review:'Performance review',matter:'Matter',general:'General'};
+const MVP_MATTERS=['Nordlys NDA','Limitation memo','Share purchase memo'];
+function mvpView(v){S.mvp.view=v;render()}
+function mvpHome(){S.mvp.detailId=null;S.mvp.main='give';render()}
+function mvpGo(main){S.mvp.main=main;S.mvp.detailId=null;render()}
+function mvpTopic(t){S.mvp.give.topic=t;render()}
+function mvpGuide(){S.mvp.give.guideOpen=!S.mvp.give.guideOpen;render()}
+function mvpSet(k,v){const c=S.mvp.give.improve;if(c&&c.status==='ready')c[k]=v}
+function mvpPlain(c){return 'What went well\n'+c.well.trim()+'\n\nWhat to improve\n'+c.improve.trim()+'\n\nNext steps\n'+c.next.trim()}
+function mvpLines(text){return text.split(/\n+/).flatMap(p=>p.split(/(?<=[.!?])\s+/)).map(s=>s.replace(/^[-•*]\s*/,'').trim()).filter(Boolean)}
+function mvpSplit(text){const lines=mvpLines(text);
+ if(lines.length>=3)return {well:lines[0],improve:lines.slice(1,-1).join(' '),next:lines[lines.length-1]};
+ if(lines.length===2)return {well:lines[0],improve:lines[1],next:'Agree a date for the next draft before it starts.'};
+ if(lines.length===1)return {well:lines[0],improve:'Name one change that would make the biggest difference.',next:'Agree what happens next, and by when.'};
+ return {well:'Name one thing that went well.',improve:'Name one thing to change.',next:'Name the next step.'}}
+function mvpNote(block){const g=S.mvp.give,t=g.text.trim();g.text=t?t+'\n\n'+block:block;g.improve=null;render()}
+function mvpAsk(i){mvpNote(MVP_GUIDE[S.mvp.give.topic][i]+'\n- ')}
+function mvpDictate(){const g=S.mvp.give,j=J(g.jid);
+ const line=g.topic==='review'?j.first+' delivered a precise Nordlys NDA. Turnaround slipped twice. Next, '+j.first+' leads the following NDA and I review it before it goes out.'
+  :g.topic==='matter'?'On '+g.matter+', '+j.first+' owned the first draft. The definition was too broad. Next time, check the client precedent before sending.'
+  :j.first+' should keep the clear client emails, and start raising the commercial point in the first draft.';
+ mvpNote(line);toast('Dictation added')}
+function mvpImprove(){const g=S.mvp.give,source=g.text.trim();
+ if(!source){toast('Write a few notes first');return}
+ g.improve={status:'loading',well:'',improve:'',next:'',sourceText:source};render();mvpReveal();
+ setTimeout(()=>{const c=S.mvp.give.improve;
+  // Drop the result if the note changed or the card was discarded.
+  if(!c||c.status!=='loading'||c.sourceText!==source)return;
+  g.improve=Object.assign({status:'ready',sourceText:source},mvpSplit(source));render();mvpReveal()},700)}
+function mvpReveal(){const el=$('#mvp-improved');if(el)el.scrollIntoView({block:'nearest'})}
+function mvpAccept(){const c=S.mvp.give.improve;if(!c||c.status!=='ready')return;S.mvp.give.text=mvpPlain(c);S.mvp.give.improve=null;render()}
+function mvpDiscard(){S.mvp.give.improve=null;render()}
+function mvpEdit(){const el=$('#mvp-well');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n)}}
+function mvpSend(){const g=S.mvp.give,c=g.improve,text=c&&c.status==='ready'?mvpPlain(c):g.text.trim();
+ if(!text){toast('Write your feedback first');return}
+ const j=J(g.jid),kind=MVP_KIND[g.topic];
+ S.mvp.received.unshift({id:'r'+Date.now(),from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833',subject:g.topic==='matter'?g.matter:g.topic==='review'?'Performance notes':'Check-in',type:kind,date:'23 Oct 2026',unread:true,body:text});
+ S.mvp.owed=S.mvp.owed.filter(o=>!(o.jid===g.jid&&o.topic===kind));
+ g.text='';g.improve=null;toast('Sent to '+j.first);render()}
+function mvpOpen(id){const it=S.mvp.received.find(x=>x.id===id);if(!it)return;it.unread=false;S.mvp.detailId=id;S.mvp.main='receive';render()}
+function mvpBack(){S.mvp.detailId=null;S.mvp.main='receive';render()}
+function mvpOverview(){const m=S.mvp,latest=m.received[0];
+ const owed=m.owed.map(o=>{const j=J(o.jid);return `<div class="small row">${av(j,22)} <span>${j.first} · ${esc(o.topic)}</span></div>`}).join('')||'<div class="small muted">Nothing waiting</div>';
+ return `<div class="mvp-sum"><div class="card kpi" id="mvp-owed" onclick="mvpGo('give')"><div class="small muted">Feedback to be given</div><div class="n">${m.owed.length}</div>${owed}</div>
+ <div class="card kpi" id="mvp-inbox" onclick="mvpGo('receive')"><div class="small muted">Feedback received</div><div class="n">${m.received.length}</div>${latest?`<div class="small">${esc(latest.from)}</div><div class="tiny muted">${esc(latest.subject)} · ${latest.date}</div>`:'<div class="small muted">None yet</div>'}</div></div>`}
+function mvpGuidePanel(){const g=S.mvp.give;return `<div class="card pad" id="mvp-guide-panel"><div class="row between"><b>Help me get started</b><button class="icb" title="Close" onclick="mvpGuide()">✕</button></div><div class="tiny muted" style="margin-top:4px">${MVP_TOPIC[g.topic]}</div>${MVP_GUIDE[g.topic].map((q,i)=>`<button class="mvp-q" onclick="mvpAsk(${i})">${esc(q)}</button>`).join('')}</div>`}
+function mvpCard(){const c=S.mvp.give.improve;if(!c)return '';
+ if(c.status==='loading')return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improve feedback</b></div><div class="pad small muted"><span class="spin"></span> Reading your notes…</div></div>`;
+ const sec=(k,label)=>`<div class="fsec mvp-sec"><label>${label}</label><textarea id="mvp-${k}" oninput="mvpSet('${k}',this.value)">${esc(c[k])}</textarea></div>`;
+ const acts=`<span style="margin-left:auto" class="row"><button class="btn sm pri" id="mvp-accept" onclick="mvpAccept()">Accept</button><button class="btn sm" id="mvp-edit" onclick="mvpEdit()">Edit</button><button class="btn sm" id="mvp-discard" onclick="mvpDiscard()">Discard</button></span>`;
+ return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improved feedback</b>${acts}</div><div class="pad">${sec('well','What went well')}${sec('improve','What to improve')}${sec('next','Next steps')}</div></div>`}
+function mvpGive(){const g=S.mvp.give;return `<div class="mvp-lay${g.guideOpen?'':' one'}"><div>
+ <div class="tiny muted">To</div><div class="mvp-pick">${JUN.map(j=>`<button class="btn sm ${g.jid===j.id?'on':''}" onclick="S.mvp.give.jid='${j.id}';render()">${av(j,22)} ${j.first}</button>`).join('')}</div>
+ <div class="tiny muted" style="margin-top:14px">Topic</div><div class="row wrap" style="margin-top:6px"><div class="seg">${['review','matter','general'].map(k=>`<button class="${g.topic===k?'on':''}" onclick="mvpTopic('${k}')">${MVP_TOPIC[k]}</button>`).join('')}</div>
+ ${g.topic==='matter'?`<select class="sel" id="mvp-matter" onchange="S.mvp.give.matter=this.value">${MVP_MATTERS.map(n=>`<option ${g.matter===n?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}</div>
+ <textarea id="mvp-text" class="mvp-ta" placeholder="Write in your own words. Bullets are fine." oninput="S.mvp.give.text=this.value">${esc(g.text)}</textarea>
+ <div class="row wrap" style="margin-top:8px"><button class="icb" id="mvp-mic" title="Dictate" onclick="mvpDictate()">${icn('mic',16)}</button><button class="icb" id="mvp-guide" title="Help me get started" onclick="mvpGuide()">${icn('spark',16)}</button><span style="margin-left:auto" class="row"><button class="btn" id="mvp-improve-btn" onclick="mvpImprove()">Improve feedback</button><button class="btn pri" id="mvp-send" onclick="mvpSend()">Send feedback</button></span></div>
+ ${mvpCard()}</div>${g.guideOpen?mvpGuidePanel():''}</div>`}
+// Both roles share this inbox so a note Martin sends stays visible without a second list.
+function mvpList(){const rows=S.mvp.received.map(it=>`<div class="mvp-item" data-mvp-recv="${it.id}" onclick="mvpOpen('${it.id}')"><span class="av" style="background:${it.fromCol};width:32px;height:32px">${esc(it.fromIni)}</span><div><div class="row"><b>${esc(it.from)}</b>${it.unread?'<i class="mvp-dot" title="Unread"></i>':''}</div><div class="small muted">${esc(it.subject)}</div></div><span class="chip">${esc(it.type)}</span><span class="tiny muted">${it.date}</span></div>`).join('');
+ return `<div class="card">${rows||'<div class="pad small muted">No feedback yet</div>'}</div>`}
+function mvpDetail(){const it=S.mvp.received.find(x=>x.id===S.mvp.detailId);if(!it)return mvpMain();
+ return `<button class="back" id="mvp-back" onclick="mvpBack()">← Back</button><div class="card pad" style="margin-top:8px"><div class="row"><span class="av" style="background:${it.fromCol};width:36px;height:36px">${esc(it.fromIni)}</span><div><b>${esc(it.from)}</b><div class="tiny muted">${esc(it.subject)}</div></div><span class="chip" style="margin-left:auto">${esc(it.type)}</span></div><div class="tiny muted" style="margin:10px 0">${it.date}</div><div class="mvp-body">${esc(it.body)}</div></div>`}
+function mvpMain(){const m=S.mvp,tabs=[['receive','Receive feedback'],['give','Give feedback']];
+ return mvpOverview()+`<div class="ptabs">${tabs.map(([k,l])=>`<span class="${m.main===k?'on':''}" data-mvp-main="${k}" onclick="mvpGo('${k}')">${l}</span>`).join('')}</div>${m.main==='give'?mvpGive():mvpList()}`}
+function rMVP(){const sen=S.mvp.view==='senior';
+ return `<div class="row" style="margin-bottom:10px;justify-content:flex-end"><span class="viewsw"><button class="${sen?'on':''}" id="mvp-senior" onclick="mvpView('senior')">Senior view (Martin)</button><button class="${sen?'':'on'}" id="mvp-junior" onclick="mvpView('junior')">Junior view (Anna)</button></span></div>
+ <div class="frame">${sidebar('fs',[{k:'fs',i:'users',l:'Feedback Space',on:'mvpHome()'}],sen?null:J('anna'))}<div class="cnt" style="padding:24px 28px">
+ <div class="row between wrap"><h1 class="projt">Feedback Space</h1><span class="row"><span class="chip">MVP</span><span class="small muted">${sen?'Martin Lund · senior':'Anna Williams · your own space'}</span></span></div>
+ ${S.mvp.detailId?mvpDetail():mvpMain()}</div></div>`}
 /* ---------- E ---------- */
 function nHTML(k,n,t){return (n[0]==='ok'?'✓ ':'💡 ')+esc(n[1])+(n[0]==='warn'&&t==='alex'&&k==='imp'?` <button class="link" id="e-ex" onclick="eEx()">Add an example placeholder</button>`:'')}
 S.e.s=S.e.r.anna.s;
