@@ -556,6 +556,15 @@ select.mvp-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .mvp-to{display:flex;align-items:center;gap:10px;margin-top:6px}
 .mvp-to .mvp-field{margin-top:0;flex:1}
 .mvp-ta{width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none;resize:vertical;margin-top:12px}
+.mvp-msg{min-height:72px}
+.mvp-reqtag{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--blueS);border-color:#cdd7ff;color:#2d46a8}
+.mvp-reqrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:14px;background:var(--soft);border:1px solid var(--line);border-radius:10px}
+.mvp-reqrow .mvp-reqmeta{flex:1;min-width:180px;font-size:13px}
+.mvp-status{font-size:11px;color:var(--mut)}
+.mvp-status.answered{color:var(--green)}
+.mvp-status.waiting{color:var(--amber)}
+.mvp-reqlist .mvp-item{cursor:default}
+.mvp-reqlist .mvp-item:hover{background:transparent}
 .mvp-help{border:1px solid #d9d3c5;background:var(--soft);color:#3a3833;border-radius:20px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px}
 .mvp-help:hover{background:#ebe7de}
 .mvp-help.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -840,10 +849,14 @@ function wCopy(id){const t=wFinal(id)||W[id].items.filter(i=>i.status!=='rejecte
 function wSend(id){W[id].onSend(wFinal(id),wFinalItems(id))}
 /* ---------- state ---------- */
 const S={tab:'home',view:{A:'senior',C:'senior',D:'senior',E:'senior'},rated:{},jst:{},
- mvp:{view:'senior',main:'give',detailId:null,
+ mvp:{view:'senior',main:'give',detailId:null,activeRequestId:null,
   drafts:{
    senior:{to:'anna',topic:'',text:'',guideOpen:false,guideIdx:0,improve:null},
    junior:{to:'martin',topic:'',text:'',guideOpen:false,guideIdx:0,improve:null}},
+  reqDrafts:{
+   senior:{to:'henrik',topic:'',message:''},
+   junior:{to:'martin',topic:'',message:''}},
+  requests:[{id:'rq1',from:'anna',to:'martin',topic:'Supervision on the Hansen employment case',message:'A short note on how I handled the client call would help.',date:'22 Oct 2026',status:'waiting'}],
   owedS:[{id:'o1',pid:'jonas'},{id:'o2',pid:'sofie'},{id:'o3',pid:'emil'}],
   owedJ:[{id:'jo1',pid:'martin'},{id:'jo2',pid:'henrik'},{id:'jo3',pid:'sofie'}],
   recvS:[
@@ -1251,23 +1264,42 @@ const MVP_GUIDE={
 const MVP_GUIDE_LABEL={review:'Performance review',matter:'Legal matter',upward:'Upward or peer feedback',general:'General'};
 const MVP_TYPE={review:'Performance review',matter:'Matter',upward:'Upward',general:'General'};
 function mvpG(){return S.mvp.drafts[S.mvp.view]}
+function mvpRQ(){return S.mvp.reqDrafts[S.mvp.view]}
+function mvpMeId(){return S.mvp.view==='senior'?'martin':'anna'}
 function mvpOwed(){return S.mvp.view==='senior'?S.mvp.owedS:S.mvp.owedJ}
 function mvpRecv(){return S.mvp.view==='senior'?S.mvp.recvS:S.mvp.recvJ}
+function mvpAnyPerson(id){const j=J(id);if(j)return {id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col};const s=SENIORS.find(x=>x.id===id);if(s)return {id:s.id,name:s.name,first:s.name.split(' ')[0],ini:s.ini,col:'#3a3833'};return {id,name:id,first:id,ini:'?',col:'#7d766a'}}
 function mvpPeople(){
  if(S.mvp.view==='senior')return JUN.map(j=>({id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col}));
  const seniors=SENIORS.map(s=>({id:s.id,name:s.name,first:s.name.split(' ')[0],ini:s.ini,col:'#3a3833'}));
  const peers=JUN.filter(j=>j.id!=='anna').map(j=>({id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col}));
  return seniors.concat(peers)}
-function mvpPerson(id){return mvpPeople().find(p=>p.id===id)||mvpPeople()[0]}
-function mvpOwedPerson(o){const p=mvpPerson(o.pid);if(p)return p;const j=J(o.pid);if(j)return {id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col};const s=SENIORS.find(x=>x.id===o.pid);return s?{id:s.id,name:s.name,first:s.name.split(' ')[0],ini:s.ini,col:'#3a3833'}:{id:o.pid,name:o.pid,first:o.pid,ini:'?',col:'#7d766a'}}
+function mvpReqPeople(){
+ if(S.mvp.view==='junior')return mvpPeople();
+ const peers=SENIORS.filter(s=>s.id!=='martin').map(s=>({id:s.id,name:s.name,first:s.name.split(' ')[0],ini:s.ini,col:'#3a3833'}));
+ return peers.concat(JUN.map(j=>({id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col})))}
+function mvpPerson(id){return mvpPeople().find(p=>p.id===id)||mvpAnyPerson(id)}
+function mvpOwedPerson(o){return mvpAnyPerson(o.pid)}
+function mvpWaitingForMe(){return S.mvp.requests.filter(r=>r.to===mvpMeId()&&r.status==='waiting')}
+function mvpMyRequests(){return S.mvp.requests.filter(r=>r.from===mvpMeId())}
 function mvpGuideKey(topic){const t=(topic||'').toLowerCase();
  if(/review|performance|appraisal|quarter|\bq[1-4]\b/.test(t))return 'review';
  if(/case|matter|contract|client|court|dispute|agreement|due diligence|lease|employment/.test(t))return 'matter';
  if(S.mvp.view==='junior'&&/supervis|mentor|coach|senior|upward|reviewer|guidance/.test(t))return 'upward';
  return 'general'}
-function mvpView(v){S.mvp.view=v;S.mvp.detailId=null;render()}
+function mvpView(v){S.mvp.view=v;S.mvp.detailId=null;S.mvp.activeRequestId=null;render()}
 function mvpHome(){S.mvp.detailId=null;S.mvp.main='give';render()}
 function mvpGo(main){S.mvp.main=main;S.mvp.detailId=null;render()}
+function mvpRespond(id){const r=S.mvp.requests.find(x=>x.id===id);if(!r||r.status!=='waiting')return;
+ S.mvp.main='give';S.mvp.activeRequestId=id;S.mvp.detailId=null;
+ const g=S.mvp.drafts.senior;g.to=r.from;g.topic=r.topic;g.text='';g.improve=null;g.guideOpen=false;render()}
+function mvpSendRequest(){const d=mvpRQ(),topic=d.topic.trim();
+ if(!topic){toast('Add a topic for your request');return}
+ const to=mvpAnyPerson(d.to),from=mvpMeId();
+ if(d.to===from){toast('Choose someone else');return}
+ S.mvp.requests.unshift({id:'rq'+Date.now(),from,to:d.to,topic,message:d.message.trim(),date:'23 Oct 2026',status:'waiting'});
+ d.topic='';d.message='';toast('Request sent to '+to.first);render()}
+function mvpDeliver(toId,item){if(J(toId))S.mvp.recvJ.unshift(item);else S.mvp.recvS.unshift(item)}
 function mvpGuide(){const g=mvpG();g.guideOpen=!g.guideOpen;if(g.guideOpen)g.guideIdx=0;render()}
 function mvpGuideClose(){mvpG().guideOpen=false;render()}
 function mvpGuideNext(){const g=mvpG(),qs=MVP_GUIDE[mvpGuideKey(g.topic)];if(g.guideIdx<qs.length-1){g.guideIdx++;render();return}g.guideDone=true;render()}
@@ -1303,16 +1335,22 @@ function mvpDiscard(){mvpG().improve=null;render()}
 function mvpEdit(){const el=$('#mvp-well');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n)}}
 function mvpSend(){const g=mvpG(),c=g.improve,text=c&&c.status==='ready'?mvpPlain(c):g.text.trim();
  if(!text){toast('Write your feedback first');return}
- const p=mvpPerson(g.to),key=mvpGuideKey(g.topic),sub=(g.topic.trim()||'Feedback'),me=S.mvp.view==='senior'?{from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833'}:{from:'Anna Williams',fromIni:'AW',fromCol:'#7d766a'};
- const list=mvpRecv();
- list.unshift({id:'r'+Date.now(),from:me.from,fromIni:me.fromIni,fromCol:me.fromCol,subject:sub,type:MVP_TYPE[key],date:'23 Oct 2026',unread:true,body:text});
+ const p=mvpAnyPerson(g.to),key=mvpGuideKey(g.topic),sub=(g.topic.trim()||'Feedback'),me=S.mvp.view==='senior'?{from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833'}:{from:'Anna Williams',fromIni:'AW',fromCol:'#7d766a'};
+ mvpDeliver(g.to,{id:'r'+Date.now(),from:me.from,fromIni:me.fromIni,fromCol:me.fromCol,subject:sub,type:MVP_TYPE[key],date:'23 Oct 2026',unread:true,body:text});
+ let req=S.mvp.activeRequestId&&S.mvp.requests.find(r=>r.id===S.mvp.activeRequestId);
+ if(!req)req=S.mvp.requests.find(r=>r.status==='waiting'&&r.to===mvpMeId()&&r.from===g.to&&r.topic===g.topic.trim());
+ if(req)req.status='answered';
  const owed=mvpOwed(),ix=owed.findIndex(o=>o.pid===g.to);if(ix>=0)owed.splice(ix,1);
- g.text='';g.topic='';g.improve=null;g.guideOpen=false;toast('Sent to '+p.first);render()}
+ S.mvp.activeRequestId=null;g.text='';g.topic='';g.improve=null;g.guideOpen=false;toast('Sent to '+p.first);render()}
 function mvpOpen(id){const it=mvpRecv().find(x=>x.id===id);if(!it)return;it.unread=false;S.mvp.detailId=id;S.mvp.main='receive';render()}
 function mvpBack(){S.mvp.detailId=null;S.mvp.main='receive';render()}
-function mvpOverview(){const owed=mvpOwed(),recv=mvpRecv(),latest=recv[0];
- const names=owed.map(o=>{const p=mvpOwedPerson(o);return `<div class="small row"><span class="av" style="background:${p.col};width:22px;height:22px;font-size:9px">${esc(p.ini)}</span> <span>${esc(p.first)}</span></div>`}).join('')||'<div class="small muted">Nothing waiting</div>';
- return `<div class="mvp-sum"><div class="card kpi" id="mvp-owed" onclick="mvpGo('give')"><div class="small muted">Give Feedback</div><div class="n">${owed.length}</div>${names}</div>
+function mvpOverview(){const waiting=mvpWaitingForMe(),owed=mvpOwed(),recv=mvpRecv(),latest=recv[0];
+ const seen=new Set(waiting.map(r=>r.from));
+ const reqNames=waiting.map(r=>{const p=mvpAnyPerson(r.from);return `<div class="small row" style="cursor:pointer" onclick="event.stopPropagation();mvpRespond('${r.id}')"><span class="av" style="background:${p.col};width:22px;height:22px;font-size:9px">${esc(p.ini)}</span> <span>${esc(p.first)}</span><span class="chip mvp-reqtag">Requested</span></div>`}).join('');
+ const owedNames=owed.filter(o=>!seen.has(o.pid)).map(o=>{const p=mvpOwedPerson(o);return `<div class="small row"><span class="av" style="background:${p.col};width:22px;height:22px;font-size:9px">${esc(p.ini)}</span> <span>${esc(p.first)}</span></div>`}).join('');
+ const names=reqNames+owedNames||'<div class="small muted">Nothing waiting</div>';
+ const n=waiting.length+owed.filter(o=>!seen.has(o.pid)).length;
+ return `<div class="mvp-sum"><div class="card kpi" id="mvp-owed" onclick="mvpGo('give')"><div class="small muted">Give Feedback</div><div class="n">${n}</div>${names}</div>
  <div class="card kpi" id="mvp-inbox" onclick="mvpGo('receive')"><div class="small muted">Received Feedback</div><div class="n">${recv.length}</div>${latest?`<div class="small">${esc(latest.from)}</div><div class="tiny muted">${esc(latest.subject)} · ${latest.date}</div>`:'<div class="small muted">None yet</div>'}</div></div>`}
 function mvpGuidePanel(){const g=mvpG(),key=mvpGuideKey(g.topic),qs=MVP_GUIDE[key],n=qs.length;
  if(g.guideDone)return `<div class="card pad mvp-qcard" id="mvp-guide-panel"><div class="row between"><b>Help me get started</b><button class="icb" title="Close" onclick="mvpGuideClose()">✕</button></div><p class="mvp-qtext muted">That was the last question.</p><div class="row wrap"><button class="btn pri sm" onclick="mvpGuideRestart()">Start over</button><button class="btn sm" onclick="mvpGuideClose()">Close</button></div></div>`;
@@ -1326,11 +1364,13 @@ function mvpCard(){const c=mvpG().improve;if(!c)return '';
  const sec=(k,label)=>`<div class="fsec mvp-sec"><label>${label}</label><textarea id="mvp-${k}" oninput="mvpSet('${k}',this.value)">${esc(c[k])}</textarea></div>`;
  const acts=`<span style="margin-left:auto" class="row"><button class="btn sm pri" id="mvp-accept" onclick="mvpAccept()">Accept</button><button class="btn sm" id="mvp-edit" onclick="mvpEdit()">Edit</button><button class="btn sm" id="mvp-discard" onclick="mvpDiscard()">Discard</button></span>`;
  return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improved feedback</b>${acts}</div><div class="pad">${sec('well','What went well')}${sec('improve','What to improve')}${sec('next','Next steps')}</div></div>`}
-function mvpGive(){const g=mvpG(),people=mvpPeople(),sel=mvpPerson(g.to);
- return `<div class="mvp-lay${g.guideOpen?'':' one'}"><div>
+function mvpReqBanner(){const waiting=mvpWaitingForMe();if(!waiting.length)return '';
+ return waiting.map(r=>{const p=mvpAnyPerson(r.from);return `<div class="mvp-reqrow" id="mvp-req-${r.id}"><span class="av" style="background:${p.col};width:28px;height:28px;font-size:10px">${esc(p.ini)}</span><div class="mvp-reqmeta"><b>${esc(p.name)}</b> requested feedback · ${esc(r.topic)}</div><button class="btn sm pri" onclick="mvpRespond('${r.id}')">Respond</button></div>`}).join('')}
+function mvpGive(){const g=mvpG(),people=mvpPeople(),sel=mvpAnyPerson(g.to);
+ return `${mvpReqBanner()}<div class="mvp-lay${g.guideOpen?'':' one'}"><div>
  <div class="tiny muted">To</div>
  <div class="mvp-to"><span class="av" style="background:${sel.col};width:32px;height:32px">${esc(sel.ini)}</span>
- <select class="mvp-field" id="mvp-to" aria-label="Recipient" onchange="mvpG().to=this.value;render()">${people.map(p=>`<option value="${p.id}" ${g.to===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
+ <select class="mvp-field" id="mvp-to" aria-label="Recipient" onchange="mvpG().to=this.value;S.mvp.activeRequestId=null;render()">${people.map(p=>`<option value="${p.id}" ${g.to===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
  <div class="tiny muted" style="margin-top:14px">Topic</div>
  <input class="mvp-field" id="mvp-topic" placeholder="What is the feedback about? e.g. Q3 performance review, the Hansen employment case" value="${esc(g.topic)}" oninput="mvpTopicIn(this.value)">
  <textarea id="mvp-text" class="mvp-ta" placeholder="Write in your own words. Bullets are fine." oninput="mvpG().text=this.value">${esc(g.text)}</textarea>
@@ -1338,12 +1378,26 @@ function mvpGive(){const g=mvpG(),people=mvpPeople(),sel=mvpPerson(g.to);
  <button class="mvp-help ${g.guideOpen?'on':''}" id="mvp-guide" title="Saga asks you guiding questions" onclick="mvpGuide()">${icn('bulb',15)} Help me get started</button>
  <span style="margin-left:auto" class="row"><button class="btn" id="mvp-improve-btn" onclick="mvpImprove()">Improve feedback</button><button class="btn pri" id="mvp-send" onclick="mvpSend()">Send feedback</button></span></div>
  ${mvpCard()}</div>${g.guideOpen?mvpGuidePanel():''}</div>`}
+function mvpRequest(){const d=mvpRQ(),people=mvpReqPeople(),sel=mvpAnyPerson(d.to),mine=mvpMyRequests();
+ const rows=mine.map(r=>{const p=mvpAnyPerson(r.to);return `<div class="mvp-item"><span class="av" style="background:${p.col};width:32px;height:32px">${esc(p.ini)}</span><div><b>${esc(p.name)}</b><div class="small muted">${esc(r.topic)}</div></div><span class="mvp-status ${r.status}">${r.status==='answered'?'Answered':'Waiting'}</span><span class="tiny muted">${r.date}</span></div>`}).join('');
+ return `<div style="max-width:720px">
+ <div class="tiny muted">To</div>
+ <div class="mvp-to"><span class="av" style="background:${sel.col};width:32px;height:32px">${esc(sel.ini)}</span>
+ <select class="mvp-field" id="mvp-req-to" aria-label="Request from" onchange="mvpRQ().to=this.value;render()">${people.map(p=>`<option value="${p.id}" ${d.to===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
+ <div class="tiny muted" style="margin-top:14px">Topic</div>
+ <input class="mvp-field" id="mvp-req-topic" placeholder="What do you want feedback on?" value="${esc(d.topic)}" oninput="mvpRQ().topic=this.value">
+ <div class="tiny muted" style="margin-top:14px">Message <span class="muted">(optional)</span></div>
+ <textarea class="mvp-field mvp-msg" id="mvp-req-msg" placeholder="A short note for the person you ask" oninput="mvpRQ().message=this.value">${esc(d.message)}</textarea>
+ <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn pri" id="mvp-req-send" onclick="mvpSendRequest()">Send request</button></div>
+ <h3 style="font-size:16px;margin:22px 0 10px">Your requests</h3>
+ <div class="card mvp-reqlist">${rows||'<div class="pad small muted">No requests yet</div>'}</div></div>`}
 function mvpList(){const rows=mvpRecv().map(it=>`<div class="mvp-item" data-mvp-recv="${it.id}" onclick="mvpOpen('${it.id}')"><span class="av" style="background:${it.fromCol};width:32px;height:32px">${esc(it.fromIni)}</span><div><div class="row"><b>${esc(it.from)}</b>${it.unread?'<i class="mvp-dot" title="Unread"></i>':''}</div><div class="small muted">${esc(it.subject)}</div></div><span class="chip">${esc(it.type)}</span><span class="tiny muted">${it.date}</span></div>`).join('');
  return `<div class="card">${rows||'<div class="pad small muted">No feedback yet</div>'}</div>`}
 function mvpDetail(){const it=mvpRecv().find(x=>x.id===S.mvp.detailId);if(!it)return mvpMain();
  return `<button class="back" id="mvp-back" onclick="mvpBack()">← Back</button><div class="card pad" style="margin-top:8px"><div class="row"><span class="av" style="background:${it.fromCol};width:36px;height:36px">${esc(it.fromIni)}</span><div><b>${esc(it.from)}</b><div class="tiny muted">${esc(it.subject)}</div></div><span class="chip" style="margin-left:auto">${esc(it.type)}</span></div><div class="tiny muted" style="margin:10px 0">${it.date}</div><div class="mvp-body">${esc(it.body)}</div></div>`}
-function mvpMain(){const m=S.mvp,tabs=[['receive','Received Feedback'],['give','Give Feedback']];
- return mvpOverview()+`<div class="ptabs">${tabs.map(([k,l])=>`<span class="${m.main===k?'on':''}" data-mvp-main="${k}" onclick="mvpGo('${k}')">${l}</span>`).join('')}</div>${m.main==='give'?mvpGive():mvpList()}`}
+function mvpMain(){const m=S.mvp,tabs=[['give','Give Feedback'],['request','Request Feedback'],['receive','Received Feedback']];
+ const body=m.main==='give'?mvpGive():m.main==='request'?mvpRequest():mvpList();
+ return mvpOverview()+`<div class="ptabs">${tabs.map(([k,l])=>`<span class="${m.main===k?'on':''}" data-mvp-main="${k}" onclick="mvpGo('${k}')">${l}</span>`).join('')}</div>${body}`}
 function rMVP(){const sen=S.mvp.view==='senior';
  return `<div class="row" style="margin-bottom:10px;justify-content:flex-end"><span class="viewsw"><button class="${sen?'on':''}" id="mvp-senior" onclick="mvpView('senior')">Senior view (Martin)</button><button class="${sen?'':'on'}" id="mvp-junior" onclick="mvpView('junior')">Junior view (Anna)</button></span></div>
  <div class="frame">${sidebar('fs',[{k:'fs',i:'users',l:'Feedback Space',on:'mvpHome()'}],sen?null:J('anna'))}<div class="cnt" style="padding:24px 28px">
