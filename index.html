@@ -549,14 +549,13 @@ del{background:#fbe2de;color:#9b2c20;border-radius:3px;padding:0 2px}
 .mvp-sum .card{cursor:pointer}
 .mvp-sum .card:hover{border-color:var(--ink)}
 .mvp-sum .n{margin:2px 0 8px}
-.mvp-pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.mvp-pick button.on{border-color:#111;background:var(--soft)}
 .mvp-lay{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start;margin-top:4px}
 .mvp-lay.one{grid-template-columns:1fr}
-.mvp-topic{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;outline:none;margin-top:6px}
+.mvp-field{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;outline:none;margin-top:6px;font:inherit;color:inherit}
+select.mvp-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236f6a60' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
+.mvp-to{display:flex;align-items:center;gap:10px;margin-top:6px}
+.mvp-to .mvp-field{margin-top:0;flex:1}
 .mvp-ta{width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none;resize:vertical;margin-top:12px}
-.mvp-hint{margin-top:8px;font-size:12.5px;color:var(--mut)}
-.mvp-hint button{background:none;border:none;padding:0;color:var(--blue);font:inherit;font-size:12.5px;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .mvp-help{border:1px solid #d9d3c5;background:var(--soft);color:#3a3833;border-radius:20px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px}
 .mvp-help:hover{background:#ebe7de}
 .mvp-help.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -1327,12 +1326,13 @@ function mvpCard(){const c=mvpG().improve;if(!c)return '';
  const sec=(k,label)=>`<div class="fsec mvp-sec"><label>${label}</label><textarea id="mvp-${k}" oninput="mvpSet('${k}',this.value)">${esc(c[k])}</textarea></div>`;
  const acts=`<span style="margin-left:auto" class="row"><button class="btn sm pri" id="mvp-accept" onclick="mvpAccept()">Accept</button><button class="btn sm" id="mvp-edit" onclick="mvpEdit()">Edit</button><button class="btn sm" id="mvp-discard" onclick="mvpDiscard()">Discard</button></span>`;
  return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improved feedback</b>${acts}</div><div class="pad">${sec('well','What went well')}${sec('improve','What to improve')}${sec('next','Next steps')}</div></div>`}
-function mvpGive(){const g=mvpG(),people=mvpPeople(),empty=!g.text.trim();
+function mvpGive(){const g=mvpG(),people=mvpPeople(),sel=mvpPerson(g.to);
  return `<div class="mvp-lay${g.guideOpen?'':' one'}"><div>
- <div class="tiny muted">To</div><div class="mvp-pick">${people.map(p=>`<button class="btn sm ${g.to===p.id?'on':''}" onclick="mvpG().to='${p.id}';render()">${`<span class="av" style="background:${p.col};width:22px;height:22px;font-size:9px">${esc(p.ini)}</span>`} ${esc(p.first)}</button>`).join('')}</div>
+ <div class="tiny muted">To</div>
+ <div class="mvp-to"><span class="av" style="background:${sel.col};width:32px;height:32px">${esc(sel.ini)}</span>
+ <select class="mvp-field" id="mvp-to" aria-label="Recipient" onchange="mvpG().to=this.value;render()">${people.map(p=>`<option value="${p.id}" ${g.to===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
  <div class="tiny muted" style="margin-top:14px">Topic</div>
- <input class="mvp-topic" id="mvp-topic" placeholder="What is the feedback about? e.g. Q3 performance review, the Hansen employment case" value="${esc(g.topic)}" oninput="mvpTopicIn(this.value)">
- ${empty?`<div class="mvp-hint">Not sure where to start? <button type="button" onclick="mvpG().guideOpen=true;mvpG().guideIdx=0;mvpG().guideDone=false;render()">Let Saga guide you</button>.</div>`:''}
+ <input class="mvp-field" id="mvp-topic" placeholder="What is the feedback about? e.g. Q3 performance review, the Hansen employment case" value="${esc(g.topic)}" oninput="mvpTopicIn(this.value)">
  <textarea id="mvp-text" class="mvp-ta" placeholder="Write in your own words. Bullets are fine." oninput="mvpG().text=this.value">${esc(g.text)}</textarea>
  <div class="row wrap" style="margin-top:8px"><button class="icb" id="mvp-mic" title="Dictate" onclick="mvpDictate()">${icn('mic',16)}</button>
  <button class="mvp-help ${g.guideOpen?'on':''}" id="mvp-guide" title="Saga asks you guiding questions" onclick="mvpGuide()">${icn('bulb',15)} Help me get started</button>
