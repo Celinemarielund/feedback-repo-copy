@@ -1312,21 +1312,29 @@ const MVP_LEX={
  improve:['need to','too long','struggled','unclear','mistake','improve','missed','better','could','should','late'],
  well:['impressed','delivered','thorough','strong','proud','clear','owned','nice','great','good','well']
 };
+function mvpPhrase(note){
+ const t=String(note||'').trim().replace(/^[-•*]\s*/,'').replace(/[.!?]+$/,'').toLowerCase();
+ if(/client email|email to the client/.test(t))return 'email to the client';
+ if(/cover (email|note)/.test(t))return 'cover note';
+ if(/risk framing|litigation risk|open risks?/.test(t))return t;
+ if(/first draft|the draft/.test(t))return t;
+ return t;
+}
 const MVP_FILL={
  well:[
-  (name,topic,note)=>`${name} did this well on ${topic}. ${mvpCap(note)}.`,
-  (name,topic,note)=>`${mvpCap(note)} is a strength for ${name} on ${topic}.`,
-  (name,topic,note)=>`On ${topic}, ${name} showed this strength. ${mvpCap(note)}.`
+  (name,topic,note)=>{const p=mvpPhrase(note);return p.includes('email')?`Your ${p} was clear and well structured, ${name}, and it gave them exactly what they needed on ${topic}.`:`${mvpCap(p)} stood out on ${topic}, ${name}, and it helped the work move forward.`},
+  (name,topic,note)=>`On ${topic}, ${name}, ${mvpPhrase(note)} was a real strength, and people could act on it without a second read.`,
+  (name,topic,note)=>`${name}, you owned ${mvpPhrase(note)} on ${topic}, and that made the next step easier for the team.`
  ],
  improve:[
-  (name,topic,note)=>`On ${topic}, ${name} should improve this. ${mvpCap(note)}.`,
-  (name,topic,note)=>`${mvpCap(note)} is one change for ${name} on ${topic}.`,
-  (name,topic,note)=>`${name} can do better on ${topic}. ${mvpCap(note)}.`
+  (name,topic,note)=>{const p=mvpPhrase(note);return /should|could|need/.test(p)?`${mvpCap(p)} on ${topic}, ${name}, so the partner can decide earlier.`:`${name} should tighten ${p} on ${topic}, so the risk is clear in the first note.`},
+  (name,topic,note)=>`One change for ${name} on ${topic}: ${mvpPhrase(note)}. That would make the next review faster.`,
+  (name,topic,note)=>`On ${topic}, ${name}, ${mvpPhrase(note)} still needs attention before the draft goes out.`
  ],
  next:[
-  (name,topic,note)=>`Next for ${name} on ${topic}. ${mvpCap(note)}.`,
-  (name,topic,note)=>`Going forward on ${topic}, ${name} can take this on. ${mvpCap(note)}.`,
-  (name,topic,note)=>`The plan for ${name} on ${topic} is this. ${mvpCap(note)}.`
+  (name,topic,note)=>{const p=mvpPhrase(note);if(/^(next time|going forward|lead|try|learn)/.test(p))return `${mvpCap(p)}, ${name}, and use ${topic} as the place to practise it.`;if(/^(clearer|better|stronger|earlier)/.test(p))return `Build ${p}, ${name}, on ${topic}, with a short check-in before the next draft goes out.`;return `Next on ${topic}, ${name} should ${p}, with a short check-in before it goes out.`},
+  (name,topic,note)=>{const p=mvpPhrase(note);return /^(next time|going forward)/.test(p)?`${mvpCap(p)}, ${name}, on ${topic}. Agree a date before you start.`:`Going forward on ${topic}, ${name}, focus on ${p}. Agree a date before you start.`},
+  (name,topic,note)=>`The next step for ${name} on ${topic} is ${mvpPhrase(note)}, and I will review it with you first.`
  ]
 };
 const MVP_GUIDE={
@@ -1489,7 +1497,7 @@ function mvpSendRequest(){const d=mvpRQ(),topic=d.topic.trim();
  S.mvp.requests.unshift({id:'rq'+Date.now(),from,to:d.to,topic,message:d.message.trim(),date:'23 Oct 2026',status:'waiting'});
  d.topic='';d.message='';toast('Request sent to '+to.first);render()}
 function mvpDeliver(item){S.mvp.feedback.unshift(item)}
-function mvpGuide(){const g=mvpG();g.guideOpen=!g.guideOpen;if(g.guideOpen)g.guideIdx=0;render()}
+function mvpGuide(){const g=mvpG();g.guideOpen=!g.guideOpen;if(g.guideOpen){g.guideIdx=0;g.guideDone=false}render()}
 function mvpGuideClose(){mvpG().guideOpen=false;render()}
 function mvpGuideNext(){const g=mvpG(),qs=MVP_GUIDE[mvpGuideKey(g.topic)];if(g.guideIdx<qs.length-1){g.guideIdx++;render();return}g.guideDone=true;render()}
 function mvpGuideBack(){const g=mvpG();if(g.guideDone){g.guideDone=false;render();return}if(g.guideIdx>0){g.guideIdx--;render()}}
