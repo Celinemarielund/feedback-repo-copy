@@ -576,7 +576,7 @@ select.mvp-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .mvp-item:hover{background:var(--soft)}
 .mvp-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);display:inline-block;flex:none}
 .mvp-body{white-space:pre-wrap;line-height:1.55}
-.mvp-sec textarea{min-height:52px}
+.mvp-sec textarea{min-height:72px;overflow:hidden;resize:none;field-sizing:content}
 .side{position:relative}
 .side .mvp-me{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-weight:400;text-align:left;cursor:pointer;border-radius:8px}
 .side .mvp-me:hover{background:#fff}
@@ -1312,31 +1312,6 @@ const MVP_LEX={
  improve:['need to','too long','struggled','unclear','mistake','improve','missed','better','could','should','late'],
  well:['impressed','delivered','thorough','strong','proud','clear','owned','nice','great','good','well']
 };
-function mvpPhrase(note){
- const t=String(note||'').trim().replace(/^[-•*]\s*/,'').replace(/[.!?]+$/,'').toLowerCase();
- if(/client email|email to the client/.test(t))return 'email to the client';
- if(/cover (email|note)/.test(t))return 'cover note';
- if(/risk framing|litigation risk|open risks?/.test(t))return t;
- if(/first draft|the draft/.test(t))return t;
- return t;
-}
-const MVP_FILL={
- well:[
-  (name,topic,note)=>{const p=mvpPhrase(note);return p.includes('email')?`Your ${p} was clear and well structured, ${name}, and it gave them exactly what they needed on ${topic}.`:`${mvpCap(p)} stood out on ${topic}, ${name}, and it helped the work move forward.`},
-  (name,topic,note)=>`On ${topic}, ${name}, ${mvpPhrase(note)} was a real strength, and people could act on it without a second read.`,
-  (name,topic,note)=>`${name}, you owned ${mvpPhrase(note)} on ${topic}, and that made the next step easier for the team.`
- ],
- improve:[
-  (name,topic,note)=>{const p=mvpPhrase(note);return /should|could|need/.test(p)?`${mvpCap(p)} on ${topic}, ${name}, so the partner can decide earlier.`:`${name} should tighten ${p} on ${topic}, so the risk is clear in the first note.`},
-  (name,topic,note)=>`One change for ${name} on ${topic}: ${mvpPhrase(note)}. That would make the next review faster.`,
-  (name,topic,note)=>`On ${topic}, ${name}, ${mvpPhrase(note)} still needs attention before the draft goes out.`
- ],
- next:[
-  (name,topic,note)=>{const p=mvpPhrase(note);if(/^(next time|going forward|lead|try|learn)/.test(p))return `${mvpCap(p)}, ${name}, and use ${topic} as the place to practise it.`;if(/^(clearer|better|stronger|earlier)/.test(p))return `Build ${p}, ${name}, on ${topic}, with a short check-in before the next draft goes out.`;return `Next on ${topic}, ${name} should ${p}, with a short check-in before it goes out.`},
-  (name,topic,note)=>{const p=mvpPhrase(note);return /^(next time|going forward)/.test(p)?`${mvpCap(p)}, ${name}, on ${topic}. Agree a date before you start.`:`Going forward on ${topic}, ${name}, focus on ${p}. Agree a date before you start.`},
-  (name,topic,note)=>`The next step for ${name} on ${topic} is ${mvpPhrase(note)}, and I will review it with you first.`
- ]
-};
 const MVP_GUIDE={
  review:[
   {sec:'well',text:f=>f?`What is one piece of work from this period you were proud to see ${f} deliver, and why?`:'What is one piece of work from this period you were proud to see them deliver, and why?'},
@@ -1440,25 +1415,95 @@ function mvpLexSec(line){
  return null;
 }
 function mvpCap(s){s=String(s||'').trim().replace(/[.!?]+$/,'');return s?s.charAt(0).toUpperCase()+s.slice(1):''}
-function mvpShort(line){const t=line.trim();return !/[.!?]$/.test(t)||t.split(/\s+/).length<=5}
-function mvpExpandNote(sec,note,first,topic,i){
+function mvpTopicOn(topic){
+ const t=String(topic||'').trim();
+ if(!t)return 'on this work';
+ if(/^(the|a|an)\b/i.test(t))return 'on '+t;
+ if(/^(q[1-4]\b)/i.test(t))return 'on '+t;
+ return 'on the '+t;
+}
+function mvpBare(note){return String(note||'').trim().replace(/^[-•*]\s*/,'').replace(/[.!?]+$/,'').trim()}
+function mvpPoss(name){return name+"'s"}
+function mvpRewrite(sec,note,first,topic){
  const name=(first||'').trim()||'They';
- const where=(topic||'').trim()||'this work';
- if(!mvpShort(note)){const t=note.trim();return /[.!?]$/.test(t)?t:t+'.'}
- return MVP_FILL[sec][i%MVP_FILL[sec].length](name,where,note);
+ const on=mvpTopicOn(topic);
+ const t=mvpBare(note);
+ const low=t.toLowerCase();
+ if(!t)return '';
+ if(sec==='next'){
+  const m=t.match(/^([^,]+),\s*((?:lead|try|start|own|take|run|join|draft|write|handle)\b.+)$/i);
+  if(m){
+   const skill=m[1].trim().replace(/\sskills?$/i,'');
+   const action=m[2].trim().replace(/^to\s+/i,'');
+   return `Building ${mvpPoss(name)} ${skill} skills will make the biggest difference ${on}. A good next step is for ${name} to ${action}.`;
+  }
+  if(/^(negotiation|drafting|advocacy|research|communication|leadership|presentation)s?\b/i.test(low)&&low.split(/\s+/).length<=4){
+   return `Building ${mvpPoss(name)} ${low.replace(/\sskills?$/,'')} skills will make the biggest difference ${on}.`;
+  }
+  if(/^(lead|try|start|own|take|run|join|draft|write|handle|practise|practice)\b/i.test(low)){
+   return `A good next step is for ${name} to ${low} ${on}.`;
+  }
+  if(/^(next time|going forward)\b/i.test(low))return `${mvpCap(t)}, ${name}, ${on}.`;
+  if(/^(clearer|better|stronger|earlier)\b/i.test(low))return `Build ${low}, ${name}, ${on}, with a short check-in before the next draft goes out.`;
+  return `Next ${on}, ${name}: ${mvpCap(t)}.`;
+ }
+ if(/^missed\b/i.test(low)){
+  const what=t.replace(/^missed\s+/i,'');
+  return `${mvpCap(what)} was missed ${on}. Next time, check that point before the draft goes out, ${name}.`;
+ }
+ if(/^(should|could|need to)\b/i.test(low)){
+  return `${mvpCap(t)} ${on}, ${name}, so the issue is caught earlier.`;
+ }
+ if(/\bwas (thorough|clear|strong|good|solid|careful|impressive)\b/i.test(low)||/\bwere (thorough|clear|strong|good|solid)\b/i.test(low)){
+  return `${mvpCap(t)}, ${name}, and that helped ${on}.`;
+ }
+ if(/^(good|great|strong|clear|nice|solid|proud)\b/i.test(low)){
+  if(/email/.test(low)){
+   if(/\bon time\b/i.test(low))return `Your email to the client was clear and well structured, ${name}, and it was on time for ${on.replace(/^on /,'')}.`;
+   return `Your email to the client was clear and well structured, ${name}, and it gave them exactly what they needed ${on}.`;
+  }
+  if(/memo|note|draft|analysis|research/.test(low))return `${mvpCap(t)}, ${name}, and it was easy to act on ${on}.`;
+  return `${mvpCap(t)} stood out ${on}, ${name}.`;
+ }
+ if(/^(flag|raise|share|keep|check|tighten|shorten|name)\b/i.test(low)){
+  if(sec==='improve')return `${name} should ${low} ${on}, so the partner can decide earlier.`;
+  return `A good next step is for ${name} to ${low} ${on}.`;
+ }
+ if(sec==='well')return `What went well ${on}: ${mvpCap(t)}.`;
+ if(sec==='improve')return `One thing to improve ${on}: ${mvpCap(t)}.`;
+ return `Next ${on}: ${mvpCap(t)}.`;
+}
+function mvpJoinSec(lines){
+ if(!lines.length)return '';
+ if(lines.length===1)return lines[0];
+ return lines.map(s=>'• '+s).join('\n');
 }
 function mvpClassify(text,first,topic){
  const buckets={well:[],improve:[],next:[]};
  let qSec=null,last=null;
- const n={well:0,improve:0,next:0};
+ const seen=new Set();
  mvpLines(text).forEach(line=>{
   const tagged=mvpQuestionSec(line);
   if(tagged){qSec=tagged;return}
+  const key=mvpNorm(line);
+  if(seen.has(key))return;
+  seen.add(key);
   const sec=mvpLexSec(line)||qSec||last||'well';
   last=sec;
-  buckets[sec].push(mvpExpandNote(sec,line,first,topic,n[sec]++));
+  const out=mvpRewrite(sec,line,first,topic);
+  if(out)buckets[sec].push(out);
  });
- return {well:buckets.well.join('\n\n'),improve:buckets.improve.join('\n\n'),next:buckets.next.join('\n\n')};
+ return {well:mvpJoinSec(buckets.well),improve:mvpJoinSec(buckets.improve),next:mvpJoinSec(buckets.next)};
+}
+function mvpAutosize(){
+ const run=()=>['mvp-well','mvp-improve','mvp-next'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.style.height='auto';
+  el.style.height=Math.max(72,el.scrollHeight)+'px';
+ });
+ run();
+ if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);
 }
 function mvpHome(){S.mvp.detailId=null;S.mvp.main='give';render()}
 function mvpGo(main){S.mvp.main=main;S.mvp.detailId=null;render()}
@@ -1503,7 +1548,7 @@ function mvpGuideNext(){const g=mvpG(),qs=MVP_GUIDE[mvpGuideKey(g.topic)];if(g.g
 function mvpGuideBack(){const g=mvpG();if(g.guideDone){g.guideDone=false;render();return}if(g.guideIdx>0){g.guideIdx--;render()}}
 function mvpGuideRestart(){const g=mvpG();g.guideDone=false;g.guideIdx=0;render()}
 function mvpTopicIn(v){const g=mvpG();g.topic=v;g.guideDone=false;if(!g.guideOpen)return;const qs=MVP_GUIDE[mvpGuideKey(g.topic)];g.guideIdx=Math.min(g.guideIdx,qs.length-1);render();const t=$('#mvp-topic');if(t){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
-function mvpSet(k,v){const c=mvpG().improve;if(c&&c.status==='ready')c[k]=v}
+function mvpSet(k,v){const c=mvpG().improve;if(c&&c.status==='ready'){c[k]=v;mvpAutosize()}}
 function mvpPlain(c){
  const parts=[];
  if(c.well.trim())parts.push('What went well\n'+c.well.trim());
@@ -1531,9 +1576,9 @@ function mvpImprove(){const g=mvpG(),source=g.text.trim();
   if(!c||c.status!=='loading')return;
   if(cur.text.trim()!==c.sourceText){cur.improve=null;render();return}
   cur.improve=Object.assign({status:'ready',sourceText:c.sourceText},mvpClassify(c.sourceText,mvpGuideFirst(),cur.topic.trim()));
-  render();mvpReveal();
+  render();mvpReveal();mvpAutosize();
  },700)}
-function mvpReveal(){const el=$('#mvp-improved');if(el)el.scrollIntoView({block:'nearest'})}
+function mvpReveal(){const el=$('#mvp-improved');if(el)el.scrollIntoView({block:'nearest'});mvpAutosize()}
 function mvpAccept(){const g=mvpG(),c=g.improve;if(!c||c.status!=='ready')return;const text=mvpPlain(c);if(text)g.text=text;g.improve=null;render()}
 function mvpDiscard(){mvpG().improve=null;render()}
 function mvpEdit(){const el=$('#mvp-well')||$('#mvp-improve')||$('#mvp-next');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n)}}
@@ -1572,7 +1617,7 @@ function mvpGuidePanel(){const g=mvpG(),key=mvpGuideKey(g.topic),qs=MVP_GUIDE[ke
 function mvpCard(){const c=mvpG().improve;if(!c)return '';
  if(c.status==='loading')return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improve feedback</b></div><div class="pad small muted"><span class="spin"></span> Reading your notes…</div></div>`;
  const labels={well:'What went well',improve:'What to improve',next:'Next steps'};
- const sec=k=>c[k].trim()?`<div class="fsec mvp-sec"><label>${labels[k]}</label><textarea id="mvp-${k}" oninput="mvpSet('${k}',this.value)">${esc(c[k])}</textarea></div>`:'';
+ const sec=k=>c[k].trim()?`<div class="fsec mvp-sec"><label>${labels[k]}</label><textarea id="mvp-${k}" rows="3" oninput="mvpSet('${k}',this.value)">${esc(c[k])}</textarea></div>`:'';
  const acts=`<span style="margin-left:auto" class="row"><button class="btn sm pri" id="mvp-accept" onclick="mvpAccept()">Accept</button><button class="btn sm" id="mvp-edit" onclick="mvpEdit()">Edit</button><button class="btn sm" id="mvp-discard" onclick="mvpDiscard()">Discard</button></span>`;
  return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improved feedback</b>${acts}</div><div class="pad"><p class="small muted mvp-expandnote" id="mvp-expand-note">Saga expanded your notes. Check and edit before sending.</p>${sec('well')}${sec('improve')}${sec('next')}</div></div>`}
 function mvpReqBanner(){const waiting=mvpWaitingForMe();if(!waiting.length)return '';
