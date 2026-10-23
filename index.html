@@ -545,7 +545,6 @@ del{background:#fbe2de;color:#9b2c20;border-radius:3px;padding:0 2px}
 .to{flex-wrap:nowrap;gap:6px}
 .chip.pchip{cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px}
 .pmenu{top:30px;bottom:auto;min-width:220px}
-/* MVP feedback space */
 .mvp-sum{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 4px}
 .mvp-sum .card{cursor:pointer}
 .mvp-sum .card:hover{border-color:var(--ink)}
@@ -1232,7 +1231,6 @@ function rD(){const d=S.d,n=d.step,j=J(d.rid);
   <div class="focus" style="display:grid;gap:8px"><button class="ww-pbtn" onclick="toast('Saved to SharePoint')">Save document</button><button class="btn" id="d-share" ${d.shared?'disabled':''} onclick="dShare()">${d.shared?'✓ Shared with '+j.first+' in Saga':'Share with '+j.first+' in Saga'}</button></div>
   <div class="tiny muted">Both options keep the comments under your name.</div>`}
  return infoStrip('D')+bar+wordShell({title:'Nordlys_NDA_draft_AW',ini:'ML',rows,pane:n>=4?pane:'',paneTitle:'Saga Feedback Coach',paneOn:n>=4,hl:n===3});}
-/* ---------- MVP ---------- */
 const MVP_GUIDE={
  review:['What is one piece of work from this period you were proud to see them deliver, and why?','Where have you seen them grow the most since the last review?','What is one skill that would make the biggest difference for them in the next six months?','How do they handle feedback, pressure and deadlines?','How do they work with clients and colleagues?','What support do they need from you to take the next step?'],
  matter:['What was their role in the matter, and how well did they own it?','Which part of their legal analysis or drafting stood out, and why?','Was there a moment where a different approach would have led to a better result?','How did they communicate risks and progress to you or the client?','What should they do differently on the next similar matter?','What did you learn from working with them on this matter?'],
@@ -1265,7 +1263,6 @@ function mvpImprove(){const g=S.mvp.give,source=g.text.trim();
  if(!source){toast('Write a few notes first');return}
  g.improve={status:'loading',well:'',improve:'',next:'',sourceText:source};render();mvpReveal();
  setTimeout(()=>{const c=S.mvp.give.improve;
-  // Drop the result if the note changed or the card was discarded.
   if(!c||c.status!=='loading'||c.sourceText!==source)return;
   g.improve=Object.assign({status:'ready',sourceText:source},mvpSplit(source));render();mvpReveal()},700)}
 function mvpReveal(){const el=$('#mvp-improved');if(el)el.scrollIntoView({block:'nearest'})}
@@ -1297,7 +1294,6 @@ function mvpGive(){const g=S.mvp.give;return `<div class="mvp-lay${g.guideOpen?'
  <textarea id="mvp-text" class="mvp-ta" placeholder="Write in your own words. Bullets are fine." oninput="S.mvp.give.text=this.value">${esc(g.text)}</textarea>
  <div class="row wrap" style="margin-top:8px"><button class="icb" id="mvp-mic" title="Dictate" onclick="mvpDictate()">${icn('mic',16)}</button><button class="icb" id="mvp-guide" title="Help me get started" onclick="mvpGuide()">${icn('spark',16)}</button><span style="margin-left:auto" class="row"><button class="btn" id="mvp-improve-btn" onclick="mvpImprove()">Improve feedback</button><button class="btn pri" id="mvp-send" onclick="mvpSend()">Send feedback</button></span></div>
  ${mvpCard()}</div>${g.guideOpen?mvpGuidePanel():''}</div>`}
-// Both roles share this inbox so a note Martin sends stays visible without a second list.
 function mvpList(){const rows=S.mvp.received.map(it=>`<div class="mvp-item" data-mvp-recv="${it.id}" onclick="mvpOpen('${it.id}')"><span class="av" style="background:${it.fromCol};width:32px;height:32px">${esc(it.fromIni)}</span><div><div class="row"><b>${esc(it.from)}</b>${it.unread?'<i class="mvp-dot" title="Unread"></i>':''}</div><div class="small muted">${esc(it.subject)}</div></div><span class="chip">${esc(it.type)}</span><span class="tiny muted">${it.date}</span></div>`).join('');
  return `<div class="card">${rows||'<div class="pad small muted">No feedback yet</div>'}</div>`}
 function mvpDetail(){const it=S.mvp.received.find(x=>x.id===S.mvp.detailId);if(!it)return mvpMain();
