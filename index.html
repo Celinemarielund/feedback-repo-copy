@@ -551,11 +551,18 @@ del{background:#fbe2de;color:#9b2c20;border-radius:3px;padding:0 2px}
 .mvp-sum .n{margin:2px 0 8px}
 .mvp-pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .mvp-pick button.on{border-color:#111;background:var(--soft)}
-.mvp-lay{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start;margin-top:4px}
+.mvp-lay{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start;margin-top:4px}
 .mvp-lay.one{grid-template-columns:1fr}
+.mvp-topic{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;outline:none;margin-top:6px}
 .mvp-ta{width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none;resize:vertical;margin-top:12px}
-.mvp-q{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font:inherit;font-size:13px;line-height:1.4;color:inherit}
-.mvp-q:hover{background:var(--soft)}
+.mvp-hint{margin-top:8px;font-size:12.5px;color:var(--mut)}
+.mvp-hint button{background:none;border:none;padding:0;color:var(--blue);font:inherit;font-size:12.5px;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.mvp-help{border:1px solid #d9d3c5;background:var(--soft);color:#3a3833;border-radius:20px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px}
+.mvp-help:hover{background:#ebe7de}
+.mvp-help.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.mvp-help.on svg{stroke:#fff}
+.mvp-qcard{margin-top:4px}
+.mvp-qcard .mvp-qtext{font-size:14px;line-height:1.45;margin:10px 0 14px}
 .mvp-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer}
 .mvp-item:last-child{border-bottom:0}
 .mvp-item:hover{background:var(--soft)}
@@ -835,17 +842,21 @@ function wSend(id){W[id].onSend(wFinal(id),wFinalItems(id))}
 /* ---------- state ---------- */
 const S={tab:'home',view:{A:'senior',C:'senior',D:'senior',E:'senior'},rated:{},jst:{},
  mvp:{view:'senior',main:'give',detailId:null,
-  give:{jid:'anna',topic:'review',matter:'Nordlys NDA',text:'',guideOpen:false,improve:null},
-  owed:[
-   {id:'o1',jid:'anna',topic:'Performance review',label:'Q3 review'},
-   {id:'o2',jid:'jonas',topic:'Matter',label:'Limitation memo'},
-   {id:'o3',jid:'sofie',topic:'General',label:'Check-in'}],
-  received:[
-   {id:'r2',from:'Ingrid Solberg',fromIni:'IS',fromCol:'#5f5a51',subject:'Nordlys NDA',type:'Matter',date:'3 Oct 2026',unread:true,body:'You owned the first draft, and the cover email was ready for the client. Clause 1.2 was broader than the usual Nordlys wording. On the next NDA, check the precedent before you send it.'},
-   {id:'r4',from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833',subject:'Q3 check-in',type:'Performance review',date:'2 Oct 2026',unread:true,body:'What went well\nCareful definitions and clear client emails.\n\nWhat to improve\nTurnaround on the limitation memo.\n\nNext steps\nAgree a date for the next draft before you start.'},
-   {id:'r5',from:'Kari Holm',fromIni:'KH',fromCol:'#7d766a',subject:'Thanks on the employment note',type:'General',date:'21 Sep 2026',unread:false,body:'The walkthrough last week helped. Keep starting with what is working, then the one change that matters.'},
-   {id:'r3',from:'Henrik Aas',fromIni:'HA',fromCol:'#3a3833',subject:'Team check-in',type:'General',date:'18 Sep 2026',unread:false,body:'Keep the clear client emails. Start naming the commercial point in the first paragraph. The 3 Oct Nordlys note is a good example of the tone to keep.'},
-   {id:'r1',from:'Henrik Aas',fromIni:'HA',fromCol:'#3a3833',subject:'Q2 performance notes',type:'Performance review',date:'12 Jun 2026',unread:true,body:'What went well\nYour drafting on the Nordlys NDA was precise, especially the definitions.\n\nWhat to improve\nFlag commercial issues in the first draft, not in the second round.\n\nNext steps\nLead one NDA in Q3 and send me the draft a day before it goes out.'}]},
+  drafts:{
+   senior:{to:'anna',topic:'',text:'',guideOpen:false,guideIdx:0,improve:null},
+   junior:{to:'martin',topic:'',text:'',guideOpen:false,guideIdx:0,improve:null}},
+  owedS:[{id:'o1',pid:'jonas'},{id:'o2',pid:'sofie'},{id:'o3',pid:'emil'}],
+  owedJ:[{id:'jo1',pid:'martin'},{id:'jo2',pid:'henrik'},{id:'jo3',pid:'sofie'}],
+  recvS:[
+   {id:'rs1',from:'Ingrid Solberg',fromIni:'IS',fromCol:'#5f5a51',subject:'Lease dispute – Fjordtech',type:'Matter',date:'3 Oct 2026',unread:true,body:'You kept the client calm when the notice period looked tight. Next time, flag the litigation risk in the first note so the partner can decide earlier.'},
+   {id:'rs2',from:'Kari Holm',fromIni:'KH',fromCol:'#7d766a',subject:'Q3 peer notes',type:'Performance review',date:'2 Oct 2026',unread:true,body:'What went well\nClear written advice to the team.\n\nWhat to improve\nShare draft reviews a day earlier.\n\nNext steps\nOne short check-in before the next filing.'},
+   {id:'rs3',from:'Henrik Aas',fromIni:'HA',fromCol:'#3a3833',subject:'Team check-in',type:'General',date:'18 Sep 2026',unread:false,body:'Keep starting with the commercial point. The juniors copy that habit from you.'},
+   {id:'rs4',from:'Ingrid Solberg',fromIni:'IS',fromCol:'#5f5a51',subject:'Hansen employment case',type:'Matter',date:'12 Jun 2026',unread:false,body:'Solid structure on the advice note. Name the remedy options in the opening paragraph next time.'}],
+  recvJ:[
+   {id:'rj1',from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833',subject:'Q3 check-in',type:'Performance review',date:'2 Oct 2026',unread:true,body:'What went well\nCareful definitions and clear client emails.\n\nWhat to improve\nTurnaround on the limitation memo.\n\nNext steps\nAgree a date for the next draft before you start.'},
+   {id:'rj2',from:'Ingrid Solberg',fromIni:'IS',fromCol:'#5f5a51',subject:'Hansen employment case',type:'Matter',date:'28 Sep 2026',unread:true,body:'You owned the research note and the client summary. Next time, list the open risks in one short bullet list at the top.'},
+   {id:'rj3',from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833',subject:'Supervision on the lease dispute',type:'Matter',date:'21 Sep 2026',unread:false,body:'Good questions in our review. Keep asking for the client outcome before you draft the next memo.'},
+   {id:'rj4',from:'Henrik Aas',fromIni:'HA',fromCol:'#3a3833',subject:'Thanks after the walkthrough',type:'General',date:'12 Jun 2026',unread:false,body:'The walkthrough helped. Keep starting with what is working, then the one change that matters.'}]},
  a:null,
  fs:{view:'senior',sub:'people',jsub:'reviews',jrev:null,pb:null},up:{martin:{},henrik:{}},
  b:{tid:'anna',draft:'',improving:false,held:null,how:false,att:{},
@@ -1231,20 +1242,40 @@ function rD(){const d=S.d,n=d.step,j=J(d.rid);
   <div class="focus" style="display:grid;gap:8px"><button class="ww-pbtn" onclick="toast('Saved to SharePoint')">Save document</button><button class="btn" id="d-share" ${d.shared?'disabled':''} onclick="dShare()">${d.shared?'✓ Shared with '+j.first+' in Saga':'Share with '+j.first+' in Saga'}</button></div>
   <div class="tiny muted">Both options keep the comments under your name.</div>`}
  return infoStrip('D')+bar+wordShell({title:'Nordlys_NDA_draft_AW',ini:'ML',rows,pane:n>=4?pane:'',paneTitle:'Saga Feedback Coach',paneOn:n>=4,hl:n===3});}
+Object.assign(IC,{bulb:'M9 18h6 M10 22h4 M12 2a7 7 0 0 1 4 12c-1 1-1.5 2-1.5 3.5h-5C9.5 16 9 15 8 14a7 7 0 0 1 4-12z'});
 const MVP_GUIDE={
  review:['What is one piece of work from this period you were proud to see them deliver, and why?','Where have you seen them grow the most since the last review?','What is one skill that would make the biggest difference for them in the next six months?','How do they handle feedback, pressure and deadlines?','How do they work with clients and colleagues?','What support do they need from you to take the next step?'],
  matter:['What was their role in the matter, and how well did they own it?','Which part of their legal analysis or drafting stood out, and why?','Was there a moment where a different approach would have led to a better result?','How did they communicate risks and progress to you or the client?','What should they do differently on the next similar matter?','What did you learn from working with them on this matter?'],
+ upward:['What did this person do that helped you learn or deliver on the matter?','When did their guidance come at the right time for you?','Was there a moment where clearer direction would have helped?','How did they create space for you to own the work?','What should they keep doing when they supervise you?','What is one concrete change that would make the next matter easier?'],
  general:['What should they keep doing?','What should they start or stop doing?','What is one concrete example that illustrates your point?']
 };
-const MVP_TOPIC={review:'Performance review',matter:'Feedback on a matter',general:'General'};
-const MVP_KIND={review:'Performance review',matter:'Matter',general:'General'};
-const MVP_MATTERS=['Nordlys NDA','Limitation memo','Share purchase memo'];
-function mvpView(v){S.mvp.view=v;render()}
+const MVP_GUIDE_LABEL={review:'Performance review',matter:'Legal matter',upward:'Upward or peer feedback',general:'General'};
+const MVP_TYPE={review:'Performance review',matter:'Matter',upward:'Upward',general:'General'};
+function mvpG(){return S.mvp.drafts[S.mvp.view]}
+function mvpOwed(){return S.mvp.view==='senior'?S.mvp.owedS:S.mvp.owedJ}
+function mvpRecv(){return S.mvp.view==='senior'?S.mvp.recvS:S.mvp.recvJ}
+function mvpPeople(){
+ if(S.mvp.view==='senior')return JUN.map(j=>({id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col}));
+ const seniors=SENIORS.map(s=>({id:s.id,name:s.name,first:s.name.split(' ')[0],ini:s.ini,col:'#3a3833'}));
+ const peers=JUN.filter(j=>j.id!=='anna').map(j=>({id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col}));
+ return seniors.concat(peers)}
+function mvpPerson(id){return mvpPeople().find(p=>p.id===id)||mvpPeople()[0]}
+function mvpOwedPerson(o){const p=mvpPerson(o.pid);if(p)return p;const j=J(o.pid);if(j)return {id:j.id,name:j.name,first:j.first,ini:j.ini,col:j.col};const s=SENIORS.find(x=>x.id===o.pid);return s?{id:s.id,name:s.name,first:s.name.split(' ')[0],ini:s.ini,col:'#3a3833'}:{id:o.pid,name:o.pid,first:o.pid,ini:'?',col:'#7d766a'}}
+function mvpGuideKey(topic){const t=(topic||'').toLowerCase();
+ if(/review|performance|appraisal|quarter|\bq[1-4]\b/.test(t))return 'review';
+ if(/case|matter|contract|client|court|dispute|agreement|due diligence|lease|employment/.test(t))return 'matter';
+ if(S.mvp.view==='junior'&&/supervis|mentor|coach|senior|upward|reviewer|guidance/.test(t))return 'upward';
+ return 'general'}
+function mvpView(v){S.mvp.view=v;S.mvp.detailId=null;render()}
 function mvpHome(){S.mvp.detailId=null;S.mvp.main='give';render()}
 function mvpGo(main){S.mvp.main=main;S.mvp.detailId=null;render()}
-function mvpTopic(t){S.mvp.give.topic=t;render()}
-function mvpGuide(){S.mvp.give.guideOpen=!S.mvp.give.guideOpen;render()}
-function mvpSet(k,v){const c=S.mvp.give.improve;if(c&&c.status==='ready')c[k]=v}
+function mvpGuide(){const g=mvpG();g.guideOpen=!g.guideOpen;if(g.guideOpen)g.guideIdx=0;render()}
+function mvpGuideClose(){mvpG().guideOpen=false;render()}
+function mvpGuideNext(){const g=mvpG(),qs=MVP_GUIDE[mvpGuideKey(g.topic)];if(g.guideIdx<qs.length-1){g.guideIdx++;render();return}g.guideDone=true;render()}
+function mvpGuideBack(){const g=mvpG();if(g.guideDone){g.guideDone=false;render();return}if(g.guideIdx>0){g.guideIdx--;render()}}
+function mvpGuideRestart(){const g=mvpG();g.guideDone=false;g.guideIdx=0;render()}
+function mvpTopicIn(v){const g=mvpG();g.topic=v;g.guideDone=false;if(!g.guideOpen)return;const qs=MVP_GUIDE[mvpGuideKey(g.topic)];g.guideIdx=Math.min(g.guideIdx,qs.length-1);render();const t=$('#mvp-topic');if(t){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
+function mvpSet(k,v){const c=mvpG().improve;if(c&&c.status==='ready')c[k]=v}
 function mvpPlain(c){return 'What went well\n'+c.well.trim()+'\n\nWhat to improve\n'+c.improve.trim()+'\n\nNext steps\n'+c.next.trim()}
 function mvpLines(text){return text.split(/\n+/).flatMap(p=>p.split(/(?<=[.!?])\s+/)).map(s=>s.replace(/^[-•*]\s*/,'').trim()).filter(Boolean)}
 function mvpSplit(text){const lines=mvpLines(text);
@@ -1252,54 +1283,66 @@ function mvpSplit(text){const lines=mvpLines(text);
  if(lines.length===2)return {well:lines[0],improve:lines[1],next:'Agree a date for the next draft before it starts.'};
  if(lines.length===1)return {well:lines[0],improve:'Name one change that would make the biggest difference.',next:'Agree what happens next, and by when.'};
  return {well:'Name one thing that went well.',improve:'Name one thing to change.',next:'Name the next step.'}}
-function mvpNote(block){const g=S.mvp.give,t=g.text.trim();g.text=t?t+'\n\n'+block:block;g.improve=null;render()}
-function mvpAsk(i){mvpNote(MVP_GUIDE[S.mvp.give.topic][i]+'\n- ')}
-function mvpDictate(){const g=S.mvp.give,j=J(g.jid);
- const line=g.topic==='review'?j.first+' delivered a precise Nordlys NDA. Turnaround slipped twice. Next, '+j.first+' leads the following NDA and I review it before it goes out.'
-  :g.topic==='matter'?'On '+g.matter+', '+j.first+' owned the first draft. The definition was too broad. Next time, check the client precedent before sending.'
-  :j.first+' should keep the clear client emails, and start raising the commercial point in the first draft.';
+function mvpNote(block){const g=mvpG(),t=g.text.trim();g.text=t?t+'\n\n'+block:block;g.improve=null;render()}
+function mvpUseQ(){const g=mvpG(),qs=MVP_GUIDE[mvpGuideKey(g.topic)];mvpNote(qs[g.guideIdx]+'\n- ')}
+function mvpDictate(){const g=mvpG(),p=mvpPerson(g.to),key=mvpGuideKey(g.topic);
+ const line=key==='review'?p.first+' delivered careful work this quarter. Turnaround slipped twice. Next, '+p.first+' leads the following draft and I review it before it goes out.'
+  :key==='matter'?'On '+(g.topic.trim()||'this matter')+', '+p.first+' owned the first draft. One risk was flagged late. Next time, raise it in the opening note.'
+  :key==='upward'?p.first+' gave clear guidance on the Hansen employment case. I needed earlier direction on the remedy options. Please keep the short weekly check-ins.'
+  :p.first+' should keep the clear written updates, and start naming the commercial point in the first paragraph.';
  mvpNote(line);toast('Dictation added')}
-function mvpImprove(){const g=S.mvp.give,source=g.text.trim();
+function mvpImprove(){const g=mvpG(),source=g.text.trim();
  if(!source){toast('Write a few notes first');return}
  g.improve={status:'loading',well:'',improve:'',next:'',sourceText:source};render();mvpReveal();
- setTimeout(()=>{const g=S.mvp.give,c=g.improve;
+ setTimeout(()=>{const g=mvpG(),c=g.improve;
   if(!c||c.status!=='loading')return;
   if(g.text.trim()!==c.sourceText){g.improve=null;render();return}
   g.improve=Object.assign({status:'ready',sourceText:c.sourceText},mvpSplit(c.sourceText));render();mvpReveal()},700)}
 function mvpReveal(){const el=$('#mvp-improved');if(el)el.scrollIntoView({block:'nearest'})}
-function mvpAccept(){const c=S.mvp.give.improve;if(!c||c.status!=='ready')return;S.mvp.give.text=mvpPlain(c);S.mvp.give.improve=null;render()}
-function mvpDiscard(){S.mvp.give.improve=null;render()}
+function mvpAccept(){const g=mvpG(),c=g.improve;if(!c||c.status!=='ready')return;g.text=mvpPlain(c);g.improve=null;render()}
+function mvpDiscard(){mvpG().improve=null;render()}
 function mvpEdit(){const el=$('#mvp-well');if(el){el.focus();const n=el.value.length;el.setSelectionRange(n,n)}}
-function mvpSend(){const g=S.mvp.give,c=g.improve,text=c&&c.status==='ready'?mvpPlain(c):g.text.trim();
+function mvpSend(){const g=mvpG(),c=g.improve,text=c&&c.status==='ready'?mvpPlain(c):g.text.trim();
  if(!text){toast('Write your feedback first');return}
- const j=J(g.jid),kind=MVP_KIND[g.topic];
- S.mvp.received.unshift({id:'r'+Date.now(),from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833',subject:g.topic==='matter'?g.matter:g.topic==='review'?'Performance notes':'Check-in',type:kind,date:'23 Oct 2026',unread:true,body:text});
- S.mvp.owed=S.mvp.owed.filter(o=>!(o.jid===g.jid&&o.topic===kind));
- g.text='';g.improve=null;toast('Sent to '+j.first);render()}
-function mvpOpen(id){const it=S.mvp.received.find(x=>x.id===id);if(!it)return;it.unread=false;S.mvp.detailId=id;S.mvp.main='receive';render()}
+ const p=mvpPerson(g.to),key=mvpGuideKey(g.topic),sub=(g.topic.trim()||'Feedback'),me=S.mvp.view==='senior'?{from:'Martin Lund',fromIni:'ML',fromCol:'#3a3833'}:{from:'Anna Williams',fromIni:'AW',fromCol:'#7d766a'};
+ const list=mvpRecv();
+ list.unshift({id:'r'+Date.now(),from:me.from,fromIni:me.fromIni,fromCol:me.fromCol,subject:sub,type:MVP_TYPE[key],date:'23 Oct 2026',unread:true,body:text});
+ const owed=mvpOwed(),ix=owed.findIndex(o=>o.pid===g.to);if(ix>=0)owed.splice(ix,1);
+ g.text='';g.topic='';g.improve=null;g.guideOpen=false;toast('Sent to '+p.first);render()}
+function mvpOpen(id){const it=mvpRecv().find(x=>x.id===id);if(!it)return;it.unread=false;S.mvp.detailId=id;S.mvp.main='receive';render()}
 function mvpBack(){S.mvp.detailId=null;S.mvp.main='receive';render()}
-function mvpOverview(){const m=S.mvp,latest=m.received[0];
- const owed=m.owed.map(o=>{const j=J(o.jid);return `<div class="small row">${av(j,22)} <span>${j.first} · ${esc(o.topic)}</span></div>`}).join('')||'<div class="small muted">Nothing waiting</div>';
- return `<div class="mvp-sum"><div class="card kpi" id="mvp-owed" onclick="mvpGo('give')"><div class="small muted">Feedback to be given</div><div class="n">${m.owed.length}</div>${owed}</div>
- <div class="card kpi" id="mvp-inbox" onclick="mvpGo('receive')"><div class="small muted">Feedback received</div><div class="n">${m.received.length}</div>${latest?`<div class="small">${esc(latest.from)}</div><div class="tiny muted">${esc(latest.subject)} · ${latest.date}</div>`:'<div class="small muted">None yet</div>'}</div></div>`}
-function mvpGuidePanel(){const g=S.mvp.give;return `<div class="card pad" id="mvp-guide-panel"><div class="row between"><b>Help me get started</b><button class="icb" title="Close" onclick="mvpGuide()">✕</button></div><div class="tiny muted" style="margin-top:4px">${MVP_TOPIC[g.topic]}</div>${MVP_GUIDE[g.topic].map((q,i)=>`<button class="mvp-q" onclick="mvpAsk(${i})">${esc(q)}</button>`).join('')}</div>`}
-function mvpCard(){const c=S.mvp.give.improve;if(!c)return '';
+function mvpOverview(){const owed=mvpOwed(),recv=mvpRecv(),latest=recv[0];
+ const names=owed.map(o=>{const p=mvpOwedPerson(o);return `<div class="small row"><span class="av" style="background:${p.col};width:22px;height:22px;font-size:9px">${esc(p.ini)}</span> <span>${esc(p.first)}</span></div>`}).join('')||'<div class="small muted">Nothing waiting</div>';
+ return `<div class="mvp-sum"><div class="card kpi" id="mvp-owed" onclick="mvpGo('give')"><div class="small muted">Give Feedback</div><div class="n">${owed.length}</div>${names}</div>
+ <div class="card kpi" id="mvp-inbox" onclick="mvpGo('receive')"><div class="small muted">Received Feedback</div><div class="n">${recv.length}</div>${latest?`<div class="small">${esc(latest.from)}</div><div class="tiny muted">${esc(latest.subject)} · ${latest.date}</div>`:'<div class="small muted">None yet</div>'}</div></div>`}
+function mvpGuidePanel(){const g=mvpG(),key=mvpGuideKey(g.topic),qs=MVP_GUIDE[key],n=qs.length;
+ if(g.guideDone)return `<div class="card pad mvp-qcard" id="mvp-guide-panel"><div class="row between"><b>Help me get started</b><button class="icb" title="Close" onclick="mvpGuideClose()">✕</button></div><p class="mvp-qtext muted">That was the last question.</p><div class="row wrap"><button class="btn pri sm" onclick="mvpGuideRestart()">Start over</button><button class="btn sm" onclick="mvpGuideClose()">Close</button></div></div>`;
+ const i=Math.min(g.guideIdx,n-1);
+ return `<div class="card pad mvp-qcard" id="mvp-guide-panel"><div class="row between"><b>Help me get started</b><button class="icb" title="Close" onclick="mvpGuideClose()">✕</button></div>
+ <div class="tiny muted" style="margin-top:6px">Question ${i+1} of ${n} · ${MVP_GUIDE_LABEL[key]}</div>
+ <p class="mvp-qtext">${esc(qs[i])}</p>
+ <div class="row wrap"><button class="btn pri sm" id="mvp-use-q" onclick="mvpUseQ()">Use this question</button><button class="btn sm" id="mvp-skip-q" onclick="mvpGuideNext()">${i===n-1?'Finish':'Skip / Next'}</button>${i>0||g.guideDone?`<button class="link tiny" onclick="mvpGuideBack()">← Back</button>`:''}</div></div>`}
+function mvpCard(){const c=mvpG().improve;if(!c)return '';
  if(c.status==='loading')return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improve feedback</b></div><div class="pad small muted"><span class="spin"></span> Reading your notes…</div></div>`;
  const sec=(k,label)=>`<div class="fsec mvp-sec"><label>${label}</label><textarea id="mvp-${k}" oninput="mvpSet('${k}',this.value)">${esc(c[k])}</textarea></div>`;
  const acts=`<span style="margin-left:auto" class="row"><button class="btn sm pri" id="mvp-accept" onclick="mvpAccept()">Accept</button><button class="btn sm" id="mvp-edit" onclick="mvpEdit()">Edit</button><button class="btn sm" id="mvp-discard" onclick="mvpDiscard()">Discard</button></span>`;
  return `<div class="widget" id="mvp-improved"><div class="wh"><span class="coachav">${ic('spark')}</span><b>Improved feedback</b>${acts}</div><div class="pad">${sec('well','What went well')}${sec('improve','What to improve')}${sec('next','Next steps')}</div></div>`}
-function mvpGive(){const g=S.mvp.give;return `<div class="mvp-lay${g.guideOpen?'':' one'}"><div>
- <div class="tiny muted">To</div><div class="mvp-pick">${JUN.map(j=>`<button class="btn sm ${g.jid===j.id?'on':''}" onclick="S.mvp.give.jid='${j.id}';render()">${av(j,22)} ${j.first}</button>`).join('')}</div>
- <div class="tiny muted" style="margin-top:14px">Topic</div><div class="row wrap" style="margin-top:6px"><div class="seg">${['review','matter','general'].map(k=>`<button class="${g.topic===k?'on':''}" onclick="mvpTopic('${k}')">${MVP_TOPIC[k]}</button>`).join('')}</div>
- ${g.topic==='matter'?`<select class="sel" id="mvp-matter" onchange="S.mvp.give.matter=this.value">${MVP_MATTERS.map(n=>`<option ${g.matter===n?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}</div>
- <textarea id="mvp-text" class="mvp-ta" placeholder="Write in your own words. Bullets are fine." oninput="S.mvp.give.text=this.value">${esc(g.text)}</textarea>
- <div class="row wrap" style="margin-top:8px"><button class="icb" id="mvp-mic" title="Dictate" onclick="mvpDictate()">${icn('mic',16)}</button><button class="icb" id="mvp-guide" title="Help me get started" onclick="mvpGuide()">${icn('spark',16)}</button><span style="margin-left:auto" class="row"><button class="btn" id="mvp-improve-btn" onclick="mvpImprove()">Improve feedback</button><button class="btn pri" id="mvp-send" onclick="mvpSend()">Send feedback</button></span></div>
+function mvpGive(){const g=mvpG(),people=mvpPeople(),empty=!g.text.trim();
+ return `<div class="mvp-lay${g.guideOpen?'':' one'}"><div>
+ <div class="tiny muted">To</div><div class="mvp-pick">${people.map(p=>`<button class="btn sm ${g.to===p.id?'on':''}" onclick="mvpG().to='${p.id}';render()">${`<span class="av" style="background:${p.col};width:22px;height:22px;font-size:9px">${esc(p.ini)}</span>`} ${esc(p.first)}</button>`).join('')}</div>
+ <div class="tiny muted" style="margin-top:14px">Topic</div>
+ <input class="mvp-topic" id="mvp-topic" placeholder="What is the feedback about? e.g. Q3 performance review, the Hansen employment case" value="${esc(g.topic)}" oninput="mvpTopicIn(this.value)">
+ ${empty?`<div class="mvp-hint">Not sure where to start? <button type="button" onclick="mvpG().guideOpen=true;mvpG().guideIdx=0;mvpG().guideDone=false;render()">Let Saga guide you</button>.</div>`:''}
+ <textarea id="mvp-text" class="mvp-ta" placeholder="Write in your own words. Bullets are fine." oninput="mvpG().text=this.value">${esc(g.text)}</textarea>
+ <div class="row wrap" style="margin-top:8px"><button class="icb" id="mvp-mic" title="Dictate" onclick="mvpDictate()">${icn('mic',16)}</button>
+ <button class="mvp-help ${g.guideOpen?'on':''}" id="mvp-guide" title="Saga asks you guiding questions" onclick="mvpGuide()">${icn('bulb',15)} Help me get started</button>
+ <span style="margin-left:auto" class="row"><button class="btn" id="mvp-improve-btn" onclick="mvpImprove()">Improve feedback</button><button class="btn pri" id="mvp-send" onclick="mvpSend()">Send feedback</button></span></div>
  ${mvpCard()}</div>${g.guideOpen?mvpGuidePanel():''}</div>`}
-function mvpList(){const rows=S.mvp.received.map(it=>`<div class="mvp-item" data-mvp-recv="${it.id}" onclick="mvpOpen('${it.id}')"><span class="av" style="background:${it.fromCol};width:32px;height:32px">${esc(it.fromIni)}</span><div><div class="row"><b>${esc(it.from)}</b>${it.unread?'<i class="mvp-dot" title="Unread"></i>':''}</div><div class="small muted">${esc(it.subject)}</div></div><span class="chip">${esc(it.type)}</span><span class="tiny muted">${it.date}</span></div>`).join('');
+function mvpList(){const rows=mvpRecv().map(it=>`<div class="mvp-item" data-mvp-recv="${it.id}" onclick="mvpOpen('${it.id}')"><span class="av" style="background:${it.fromCol};width:32px;height:32px">${esc(it.fromIni)}</span><div><div class="row"><b>${esc(it.from)}</b>${it.unread?'<i class="mvp-dot" title="Unread"></i>':''}</div><div class="small muted">${esc(it.subject)}</div></div><span class="chip">${esc(it.type)}</span><span class="tiny muted">${it.date}</span></div>`).join('');
  return `<div class="card">${rows||'<div class="pad small muted">No feedback yet</div>'}</div>`}
-function mvpDetail(){const it=S.mvp.received.find(x=>x.id===S.mvp.detailId);if(!it)return mvpMain();
+function mvpDetail(){const it=mvpRecv().find(x=>x.id===S.mvp.detailId);if(!it)return mvpMain();
  return `<button class="back" id="mvp-back" onclick="mvpBack()">← Back</button><div class="card pad" style="margin-top:8px"><div class="row"><span class="av" style="background:${it.fromCol};width:36px;height:36px">${esc(it.fromIni)}</span><div><b>${esc(it.from)}</b><div class="tiny muted">${esc(it.subject)}</div></div><span class="chip" style="margin-left:auto">${esc(it.type)}</span></div><div class="tiny muted" style="margin:10px 0">${it.date}</div><div class="mvp-body">${esc(it.body)}</div></div>`}
-function mvpMain(){const m=S.mvp,tabs=[['receive','Receive feedback'],['give','Give feedback']];
+function mvpMain(){const m=S.mvp,tabs=[['receive','Received Feedback'],['give','Give Feedback']];
  return mvpOverview()+`<div class="ptabs">${tabs.map(([k,l])=>`<span class="${m.main===k?'on':''}" data-mvp-main="${k}" onclick="mvpGo('${k}')">${l}</span>`).join('')}</div>${m.main==='give'?mvpGive():mvpList()}`}
 function rMVP(){const sen=S.mvp.view==='senior';
  return `<div class="row" style="margin-bottom:10px;justify-content:flex-end"><span class="viewsw"><button class="${sen?'on':''}" id="mvp-senior" onclick="mvpView('senior')">Senior view (Martin)</button><button class="${sen?'':'on'}" id="mvp-junior" onclick="mvpView('junior')">Junior view (Anna)</button></span></div>
