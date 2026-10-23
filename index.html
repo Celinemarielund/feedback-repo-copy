@@ -1262,9 +1262,10 @@ function mvpDictate(){const g=S.mvp.give,j=J(g.jid);
 function mvpImprove(){const g=S.mvp.give,source=g.text.trim();
  if(!source){toast('Write a few notes first');return}
  g.improve={status:'loading',well:'',improve:'',next:'',sourceText:source};render();mvpReveal();
- setTimeout(()=>{const c=S.mvp.give.improve;
-  if(!c||c.status!=='loading'||c.sourceText!==source)return;
-  g.improve=Object.assign({status:'ready',sourceText:source},mvpSplit(source));render();mvpReveal()},700)}
+ setTimeout(()=>{const g=S.mvp.give,c=g.improve;
+  if(!c||c.status!=='loading')return;
+  if(g.text.trim()!==c.sourceText){g.improve=null;render();return}
+  g.improve=Object.assign({status:'ready',sourceText:c.sourceText},mvpSplit(c.sourceText));render();mvpReveal()},700)}
 function mvpReveal(){const el=$('#mvp-improved');if(el)el.scrollIntoView({block:'nearest'})}
 function mvpAccept(){const c=S.mvp.give.improve;if(!c||c.status!=='ready')return;S.mvp.give.text=mvpPlain(c);S.mvp.give.improve=null;render()}
 function mvpDiscard(){S.mvp.give.improve=null;render()}
